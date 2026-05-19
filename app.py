@@ -189,6 +189,20 @@ def do_clear():
     st.session_state["step2_confirmed"] = False
 
 
+def scroll_to_center(anchor_id: str):
+    st.markdown(
+        f"""
+        <script>
+        const el = window.parent.document.getElementById('{anchor_id}') || document.getElementById('{anchor_id}');
+        if (el) {{
+            el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
+        }}
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def download_log_html() -> bytes:
     history = st.session_state.interaction_history
     name = st.session_state.get("student_name", "").strip() or "Student"
@@ -296,6 +310,18 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
 .feedback-box, .history-card { background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 14px; }
 .feedback-box { padding: 1rem 1.1rem; margin-top: 0.5rem; }
 .history-card { padding: 1rem 1rem 0.5rem; margin-bottom: 0.85rem; }
+.next-step-btn button {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 700 !important;
+}
+@media (prefers-color-scheme: dark) {
+    .next-step-btn button {
+        background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important;
+        color: #082f49 !important;
+    }
+}
 div[data-testid="stCodeBlock"] pre, .stCode pre {
     width: 100% !important;
     white-space: pre-wrap !important;
@@ -331,7 +357,8 @@ with c2:
 with c3:
     st.text_input("Class Number", key="student_number", placeholder="e.g. 12")
 
-if st.button("✅ Confirm Step 1", use_container_width=True):
+st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
+if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
     if all([
         st.session_state.get("student_name", "").strip(),
         st.session_state.get("student_class", "").strip(),
@@ -340,12 +367,15 @@ if st.button("✅ Confirm Step 1", use_container_width=True):
         st.session_state["step1_confirmed"] = True
         st.session_state["step2_confirmed"] = False
         do_reset_after_step2()
+        scroll_to_center("step2-anchor")
     else:
         st.warning("Please complete all Step 1 fields before continuing.")
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 step1_ok = st.session_state.get("step1_confirmed", False)
 
+st.markdown("<div id='step2-anchor'></div>", unsafe_allow_html=True)
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("✍️ Step 2 — Your Advice Reply Email")
 if not step1_ok:
@@ -360,16 +390,20 @@ st.text_area(
 )
 wc = word_count(st.session_state.get("writing_input", ""))
 st.caption(f"{wc} word{'s' if wc != 1 else ''}")
-if st.button("✅ Confirm Step 2", use_container_width=True, disabled=not step1_ok):
+st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
+if st.button("✅ Next Step", use_container_width=True, disabled=not step1_ok, key="step2_next"):
     if len(st.session_state.get("writing_input", "").strip()) > 10:
         st.session_state["step2_confirmed"] = True
         do_reset_after_step2()
+        scroll_to_center("step3-anchor")
     else:
         st.warning("Please paste or type at least a few sentences before continuing.")
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 step2_ok = st.session_state.get("step2_confirmed", False)
 
+st.markdown("<div id='step3-anchor'></div>", unsafe_allow_html=True)
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("🎯 Step 3 — What Would You Like Help With?")
 if not step2_ok:
