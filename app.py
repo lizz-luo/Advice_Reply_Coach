@@ -3,6 +3,7 @@ import html
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import streamlit as st
+import streamlit.components.v1 as components
 from groq import Groq
 
 st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout="centered")
@@ -249,20 +250,27 @@ if st.session_state.pop("_do_clear", False):
 
 scroll_target = st.session_state.pop("_scroll_target", None)
 if scroll_target:
-    st.markdown(
+    components.html(
         f"""
         <script>
-        window.addEventListener('load', function() {{
-            setTimeout(function() {{
-                const el = window.parent.document.getElementById('{scroll_target}') || document.getElementById('{scroll_target}');
-                if (el) {{
-                    el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
-                }}
-            }}, 300);
-        }});
+        const targetId = {scroll_target!r};
+        function doScroll() {{
+          const parentDoc = window.parent.document;
+          const el = parentDoc.getElementById(targetId) || document.getElementById(targetId);
+          if (el) {{
+            el.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+            return true;
+          }}
+          return false;
+        }}
+        let tries = 0;
+        const timer = setInterval(() => {{
+          tries += 1;
+          if (doScroll() || tries > 20) clearInterval(timer);
+        }}, 200);
         </script>
         """,
-        unsafe_allow_html=True,
+        height=0,
     )
 
 st.markdown(
@@ -339,6 +347,7 @@ div[data-testid="stCodeBlock"] pre, .stCode pre {
     background: var(--code-bg) !important;
     color: var(--text) !important;
 }
+.footer-note { text-align:center; color: var(--muted); font-size:0.85rem; margin-top:2rem; padding-bottom:1rem; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -391,7 +400,7 @@ if not step1_ok:
     st.info("Please complete Step 1 and click Confirm Step 1 first.")
 
 st.text_area(
-    "Paste or type your advice reply email below. You can paste your whole email or just the part you want help with — like your greeting, a paragraph, or your ending.",
+    "Paste or type your advice reply email below",
     key="writing_input",
     placeholder="Paste your whole email here, or just the part you want feedback on...",
     height=220,
@@ -577,3 +586,6 @@ with st.expander("🧾 Session History"):
             st.markdown("**Feedback**")
             st.markdown(item["response"])
             st.markdown("</div>", unsafe_allow_html=True)
+
+
+st.markdown("<div class='footer-note'>© 2026 Becky Cheung. All Rights Reserved.</div>", unsafe_allow_html=True)
