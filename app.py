@@ -251,23 +251,25 @@ if st.session_state.pop("_do_clear", False):
 scroll_target = st.session_state.pop("_scroll_target", None)
 if scroll_target:
     components.html(
-        f"""
-        <script>
-        const targetId = {scroll_target!r};
-        const parentDoc = window.parent.document;
-        function doScroll() {{
-          const el = parentDoc.getElementById(targetId) || document.getElementById(targetId);
-          if (!el) return false;
-          const rect = el.getBoundingClientRect();
-          const parentWin = window.parent;
-          const absoluteTop = rect.top + parentWin.scrollY;
-          parentWin.scrollTo({{ top: Math.max(0, absoluteTop - 12), behavior: 'auto' }});
-          return true;
-        }}
-        requestAnimationFrame(() => setTimeout(doScroll, 80));
-        </script>
+        f"""<!DOCTYPE html>
+<html><head><style>html,body{{margin:0;padding:0;height:0;overflow:hidden}}</style></head>
+<body>
+<script>
+(function() {{
+  var id = {scroll_target!r};
+  function run() {{
+    var el = window.parent.document.getElementById(id);
+    if (!el) {{ return; }}
+    var top = el.getBoundingClientRect().top + window.parent.scrollY - 8;
+    window.parent.scrollTo(0, Math.max(0, top));
+  }}
+  if (document.readyState === 'complete') {{ run(); }} else {{ window.addEventListener('load', run); }}
+}})();
+</script>
+</body></html>
         """,
         height=0,
+        scrolling=False,
     )
 
 st.markdown(
@@ -379,8 +381,6 @@ if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
         st.session_state.get("student_number", "").strip(),
     ]):
         st.session_state["step1_confirmed"] = True
-        st.session_state["step2_confirmed"] = False
-        do_reset_after_step2()
         queue_scroll("step2-anchor")
         st.rerun()
     else:
@@ -409,7 +409,6 @@ st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
 if st.button("✅ Next Step", use_container_width=True, disabled=not step1_ok, key="step2_next"):
     if len(st.session_state.get("writing_input", "").strip()) > 10:
         st.session_state["step2_confirmed"] = True
-        do_reset_after_step2()
         queue_scroll("step3-anchor")
         st.rerun()
     else:
