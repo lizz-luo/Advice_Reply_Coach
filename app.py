@@ -189,18 +189,8 @@ def do_clear():
     st.session_state["step2_confirmed"] = False
 
 
-def scroll_to_center(anchor_id: str):
-    st.markdown(
-        f"""
-        <script>
-        const el = window.parent.document.getElementById('{anchor_id}') || document.getElementById('{anchor_id}');
-        if (el) {{
-            el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
-        }}
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
+def queue_scroll(anchor_id: str):
+    st.session_state["_scroll_target"] = anchor_id
 
 
 def download_log_html() -> bytes:
@@ -256,6 +246,24 @@ if st.session_state.pop("_do_reset_after_step2", False):
     do_reset_after_step2()
 if st.session_state.pop("_do_clear", False):
     do_clear()
+
+scroll_target = st.session_state.pop("_scroll_target", None)
+if scroll_target:
+    st.markdown(
+        f"""
+        <script>
+        window.addEventListener('load', function() {{
+            setTimeout(function() {{
+                const el = window.parent.document.getElementById('{scroll_target}') || document.getElementById('{scroll_target}');
+                if (el) {{
+                    el.scrollIntoView({{behavior: 'smooth', block: 'center'}});
+                }}
+            }}, 300);
+        }});
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
 
 st.markdown(
     """
@@ -367,7 +375,8 @@ if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
         st.session_state["step1_confirmed"] = True
         st.session_state["step2_confirmed"] = False
         do_reset_after_step2()
-        scroll_to_center("step2-anchor")
+        queue_scroll("step2-anchor")
+        st.rerun()
     else:
         st.warning("Please complete all Step 1 fields before continuing.")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -382,7 +391,7 @@ if not step1_ok:
     st.info("Please complete Step 1 and click Confirm Step 1 first.")
 
 st.text_area(
-    "Paste or type your advice reply email below",
+    "Paste or type your advice reply email below. You can paste your whole email or just the part you want help with — like your greeting, a paragraph, or your ending.",
     key="writing_input",
     placeholder="Paste your whole email here, or just the part you want feedback on...",
     height=220,
@@ -395,7 +404,8 @@ if st.button("✅ Next Step", use_container_width=True, disabled=not step1_ok, k
     if len(st.session_state.get("writing_input", "").strip()) > 10:
         st.session_state["step2_confirmed"] = True
         do_reset_after_step2()
-        scroll_to_center("step3-anchor")
+        queue_scroll("step3-anchor")
+        st.rerun()
     else:
         st.warning("Please paste or type at least a few sentences before continuing.")
 st.markdown("</div>", unsafe_allow_html=True)
