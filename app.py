@@ -4,16 +4,16 @@ from datetime import datetime
 import streamlit as st
 from groq import Groq
 
-st.set_page_config(page_title="Advice Reply Coach", page_icon="✉️", layout="centered")
+st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout="centered")
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I address the reader's problem?"},
-        {"value": "two_advice",        "label": "💡 Did I give at least 2 pieces of advice?"},
-        {"value": "explain_advice",    "label": "🔍 Did I explain how each piece of advice can help?"},
-        {"value": "caring_tone",       "label": "❤️ Did I use a caring and encouraging tone?"},
+        {"value": "address_problem", "label": "🎯 Did I address the reader's problem?"},
+        {"value": "two_advice",      "label": "💡 Did I give at least 2 pieces of advice?"},
+        {"value": "explain_advice",  "label": "🔍 Did I explain how each piece of advice can help?"},
+        {"value": "caring_tone",     "label": "❤️ Did I use a caring and encouraging tone?"},
     ],
     "language": [
         {"value": "modal_verbs",           "label": "💪 Did I use modal verbs (e.g. should, could, might)?"},
@@ -37,19 +37,19 @@ MODE_DESCRIPTIONS = {
 }
 
 HELP_DESC_MAP = {
-    "address_problem":      "whether the student clearly addressed and responded to the reader's problem or concern",
-    "two_advice":           "whether the student gave at least 2 separate, distinct pieces of advice",
-    "explain_advice":       "whether the student explained HOW each piece of advice can help the reader",
-    "caring_tone":          "whether the student used a caring, warm, and encouraging tone throughout",
-    "modal_verbs":          "whether the student used modal verbs appropriately (e.g. should, could, might, would)",
-    "conditional_sentences":"whether the student used conditional sentences (e.g. If you try..., you could...)",
-    "empathy_phrases":      "whether the student used phrases to show empathy (e.g. I understand how you feel)",
-    "linking_words":        "whether the student used appropriate linking words (e.g. firstly, moreover, in addition)",
-    "spelling_punctuation": "whether spelling and punctuation are correct throughout",
-    "greeting_signoff":     "whether the student included a proper greeting and sign-off",
-    "acknowledge_problem":  "whether the student acknowledged the reader's problem in the opening",
-    "separate_paragraphs":  "whether each piece of advice is in its own paragraph",
-    "encouraging_closing":  "whether the student ended with an encouraging closing",
+    "address_problem":       "whether the student clearly addressed and responded to the reader's problem or concern",
+    "two_advice":            "whether the student gave at least 2 separate, distinct pieces of advice",
+    "explain_advice":        "whether the student explained HOW each piece of advice can help the reader",
+    "caring_tone":           "whether the student used a caring, warm, and encouraging tone throughout",
+    "modal_verbs":           "whether the student used modal verbs appropriately (e.g. should, could, might, would)",
+    "conditional_sentences": "whether the student used conditional sentences (e.g. If you try..., you could...)",
+    "empathy_phrases":       "whether the student used phrases to show empathy (e.g. I understand how you feel)",
+    "linking_words":         "whether the student used appropriate linking words (e.g. firstly, moreover, in addition)",
+    "spelling_punctuation":  "whether spelling and punctuation are correct throughout",
+    "greeting_signoff":      "whether the student included a proper greeting and sign-off",
+    "acknowledge_problem":   "whether the student acknowledged the reader's problem in the opening",
+    "separate_paragraphs":   "whether each piece of advice is in its own paragraph",
+    "encouraging_closing":   "whether the student ended with an encouraging closing",
 }
 
 MODE_DESC_MAP = {
@@ -78,16 +78,16 @@ WRITE_FOR_ME_PATTERNS = [
 
 def init_state():
     defaults = {
-        "student_name": "",
-        "student_class": "",
-        "student_number": "",
-        "writing_input": "",
-        "selected_mode": "content",
-        "help_value": "",
+        "student_name":    "",
+        "student_class":   "",
+        "student_number":  "",
+        "writing_input":   "",
+        "selected_mode":   "content",
+        "help_values":     [],   # list for multiselect
         "custom_question": "",
-        "feedback_text": "",
+        "feedback_text":   "",
         "interaction_history": [],
-        "interaction_count": 0,
+        "interaction_count":   0,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -106,29 +106,42 @@ def word_count(text: str) -> int:
     return len([w for w in re.split(r"\s+", text) if w]) if text else 0
 
 
-def build_prompt(writing, student_name, mode, help_value, custom_q):
+def build_prompt(writing, student_name, mode, help_values, custom_q):
+    """Build AI prompt supporting multiple selected checklist goals."""
     category_name = MODE_DESC_MAP[mode]
-    help_desc = HELP_DESC_MAP.get(help_value, "") if help_value else ""
+    goals_text = ""
+    if help_values:
+        descs = [HELP_DESC_MAP[v] for v in help_values if v in HELP_DESC_MAP]
+        goals_text = "\n".join(f"- {d}" for d in descs)
+
     prompt = (
-        f"You are a friendly Advice Reply Coach for students aged 10–11, "
+        f"You are a friendly Advice Reply Helper for students aged 10-11, "
         f"specialising in EMAIL ADVICE REPLY writing. Student: {student_name}. "
         f"Category: {category_name}.\n"
-        "The student has written an advice reply email — a friendly email responding "
+        "The student has written an advice reply email - a friendly email responding "
         "to someone who asked for help or advice about a problem.\n"
         "RULES: ONLY give feedback on " + category_name + ". "
-        "NEVER write, rewrite, finish, or complete the student's email — not even a "
-        "single sentence. Use very simple English. Be concise (max 150 words). "
+        "NEVER write, rewrite, finish, or complete the student's email - not even a "
+        "single sentence. Use very simple English. Be concise (max 200 words total). "
         "More tips than praise. End with 1 short encouraging sentence.\n"
-        "Tips to Improve: short, clear, actionable — 1–2 simple tips only.\n"
-        "IMPORTANT: After the table, write a section called \"✏️ Try This!\" with ONE "
+        "Tips to Improve: short, clear, actionable - 1-2 simple tips per goal only.\n"
+    )
+    if goals_text:
+        prompt += (
+            f"The student has selected the following checklist goals to focus on:\n"
+            f"{goals_text}\n"
+            "Provide a SEPARATE row in the markdown table for EACH goal listed above.\n"
+        )
+    prompt += (
+        "IMPORTANT: After the table, write a section called \"Try This!\" that gives ONE "
         "concrete before-and-after example from the student's own writing. "
-        "Format: \"Your sentence: [quote]. You could try: [improved version].\"\n"
+        "Pick the weakest sentence and show how to improve it. "
+        "Format: \"Your sentence: [quote]. You could try: [improved version].\" "
+        "This example MUST relate to one of the checklist goals.\n"
         "Reply as a markdown table: | Checklist Goal | Did Well | Tips to Improve |\n"
     )
-    if help_value:
-        prompt += f"Focus: {help_desc}.\n"
     if custom_q:
-        prompt += f"Student's question: '{custom_q}'\n"
+        prompt += f"Student's question: \"{custom_q}\"\n"
     prompt += f"\nAdvice Reply Email:\n---\n{writing}\n---"
     return prompt
 
@@ -164,7 +177,7 @@ def download_log_html() -> bytes:
     rows = [
         "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>",
         "<meta name='viewport' content='width=device-width, initial-scale=1.0'>",
-        f"<title>Learning Log — {escape_html(name)}</title>",
+        f"<title>Learning Log - {escape_html(name)}</title>",
         """<style>
 body{font-family:Arial,sans-serif;max-width:900px;margin:0 auto;padding:24px;
      color:#0c1929;background:#f0f9ff;line-height:1.65}
@@ -181,7 +194,7 @@ th{background:#0ea5e9;color:#fff;padding:10px;text-align:left}
 td{padding:10px;border-bottom:1px solid #dbeafe;vertical-align:top}
 tr:nth-child(even) td{background:#f8fbff}
 </style></head><body>""",
-        "<h1>✉️ Advice Reply Coach</h1><div class='subtitle'>Learning Log</div>",
+        "<h1>✉️ Advice Reply Helper</h1><div class='subtitle'>Learning Log</div>",
         "<div class='info'>",
         f"<p><strong>Student:</strong> {escape_html(name)}</p>",
     ]
@@ -195,8 +208,10 @@ tr:nth-child(even) td{background:#f8fbff}
             f"<div class='tag'>{escape_html(entry['timestamp'])}</div>"
             f"<div class='tag'>{escape_html(entry['mode_label'])}</div>",
         ]
-        if entry.get("help_goal"):
-            rows.append(f"<p><strong>Checklist Goal:</strong> {escape_html(entry['help_goal'])}</p>")
+        goals = entry.get("help_goals", [])
+        if goals:
+            rows.append("<p><strong>Checklist Goals:</strong> " +
+                        ", ".join(escape_html(g) for g in goals) + "</p>")
         if entry.get("custom_question"):
             rows.append(f"<p><strong>Custom Question:</strong> {escape_html(entry['custom_question'])}</p>")
         rows += [
@@ -210,21 +225,21 @@ tr:nth-child(even) td{background:#f8fbff}
     return "".join(rows).encode("utf-8")
 
 
-# ── Reset helpers (called BEFORE any widget renders) ─────────────────────────
+# ── Reset helpers ─────────────────────────────────────────────────────────────
 
 def do_reset_more_help():
-    """Keep student info + writing; clear mode/goal/feedback only."""
-    st.session_state["selected_mode"]  = "content"
-    st.session_state["help_value"]     = ""
+    """Keep student info + writing; reset from Step 3 onwards."""
+    st.session_state["selected_mode"]   = "content"
+    st.session_state["help_values"]     = []
     st.session_state["custom_question"] = ""
-    st.session_state["feedback_text"]  = ""
+    st.session_state["feedback_text"]   = ""
 
 
 def do_reset_fresh_start():
-    """Keep student info; clear everything else."""
+    """Keep student info; reset writing + everything from Step 2 onwards."""
     st.session_state["writing_input"]   = ""
     st.session_state["selected_mode"]   = "content"
-    st.session_state["help_value"]      = ""
+    st.session_state["help_values"]     = []
     st.session_state["custom_question"] = ""
     st.session_state["feedback_text"]   = ""
 
@@ -233,7 +248,7 @@ def do_reset_fresh_start():
 
 init_state()
 
-# Handle deferred resets BEFORE any widget is rendered this run
+# Deferred resets run BEFORE any widget is rendered
 if st.session_state.pop("_do_reset_more_help", False):
     do_reset_more_help()
 if st.session_state.pop("_do_reset_fresh_start", False):
@@ -243,13 +258,12 @@ if st.session_state.pop("_do_reset_fresh_start", False):
 
 st.markdown("""
 <style>
-/* ── App background ── */
 .stApp {
     background: linear-gradient(160deg, #f0f9ff 0%, #f8fafc 100%);
 }
 .block-container {max-width: 760px; padding-top: 2rem; padding-bottom: 4rem;}
 
-/* ── Section panels ── */
+/* Section panels */
 .panel {
     background: #f3f4f6;
     border: 1px solid #e2e8f0;
@@ -268,7 +282,7 @@ st.markdown("""
     box-shadow: 0 2px 12px rgba(14,165,233,0.06);
 }
 
-/* ── Force white background on ALL input widgets ── */
+/* White inputs */
 input, textarea,
 div[data-baseweb="input"] input,
 div[data-baseweb="textarea"] textarea,
@@ -277,26 +291,21 @@ div[data-baseweb="base-input"] textarea,
 .stTextInput > div > div > input,
 .stTextArea > div > textarea,
 div[data-testid="stTextInput"] input,
-div[data-testid="stTextArea"] textarea,
-div[class*="st-"] input,
-div[class*="st-"] textarea {
+div[data-testid="stTextArea"] textarea {
     background-color: #ffffff !important;
     background: #ffffff !important;
 }
-
-/* Selectbox white background */
-div[data-baseweb="select"] > div:first-child,
-div[data-baseweb="popover"] div[role="option"] {
+div[data-baseweb="select"] > div:first-child {
     background-color: #ffffff !important;
 }
 
-/* ── Dividers between sections ── */
+/* Dividers */
 hr, [data-testid="stDivider"] {
     border-color: #e5e7eb !important;
     background-color: #e5e7eb !important;
 }
 
-/* ── Feedback box ── */
+/* Feedback box */
 .feedback-box {
     background: #ffffff;
     border: 1px solid #bae6fd;
@@ -305,7 +314,7 @@ hr, [data-testid="stDivider"] {
     margin-top: 0.5rem;
 }
 
-/* ── Badges / chips ── */
+/* Badge */
 .badge {
     display: inline-block;
     padding: 0.35rem 0.9rem;
@@ -328,7 +337,7 @@ hr, [data-testid="stDivider"] {
     border: 1px solid #99f6e4;
 }
 
-/* ── History card ── */
+/* History card */
 .history-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -346,7 +355,6 @@ hr, [data-testid="stDivider"] {
     font-size: 0.78rem;
     font-weight: 700;
 }
-
 .small-note {color: #475569; font-size: 0.92rem; margin: 0;}
 </style>
 """, unsafe_allow_html=True)
@@ -355,9 +363,11 @@ hr, [data-testid="stDivider"] {
 
 st.markdown("""
 <div class='hero'>
-  <div class='badge'>✉️ Advice Reply Coach</div>
-  <h1 style='margin:0 0 0.35rem 0;'>Your Smart Helper for Writing a Convincing Reply!</h1>
-  <p class='small-note'>Step through the form, get targeted AI feedback, and download your Learning Log.</p>
+  <div class='badge'>✉️ Advice Reply Helper</div>
+  <h1 style='margin:0 0 0.35rem 0;'>Advice Reply Helper</h1>
+  <p class='small-note' style='font-style:italic;color:#b45309;font-weight:600;'>
+    Your Friendly Helper for Writing a Better Reply!
+  </p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -410,34 +420,51 @@ if not step2_ok:
 mode = st.radio(
     "Choose a help category",
     options=["content", "language", "organisation"],
-    format_func=lambda x: {"content": "Content", "language": "Language", "organisation": "Organisation"}[x],
+    format_func=lambda x: {
+        "content": "Content",
+        "language": "Language",
+        "organisation": "Organisation"
+    }[x],
     key="selected_mode",
     horizontal=True,
     disabled=not step2_ok,
 )
 if step2_ok and mode:
-    st.markdown(f"<p class='small-note'>{MODE_DESCRIPTIONS[mode]}</p>", unsafe_allow_html=True)
+    st.markdown(
+        f"<p class='small-note'>{MODE_DESCRIPTIONS[mode]}</p>",
+        unsafe_allow_html=True,
+    )
 st.markdown("</div>", unsafe_allow_html=True)
 
 step3_ok = step2_ok and bool(mode)
 
-# ── Step 4: Checklist Goal ────────────────────────────────────────────────────
+# ── Step 4: Checklist Goals (multiselect) ─────────────────────────────────────
 
-options_map = {"": "— Pick a goal —"}
+all_goal_options = []
+goal_label_map   = {}
 if step3_ok:
     for item in HELP_OPTIONS[mode]:
-        options_map[item["value"]] = item["label"]
+        all_goal_options.append(item["value"])
+        goal_label_map[item["value"]] = item["label"]
 
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("📋 Step 4 — Choose a Checklist Goal")
+st.subheader("📋 Step 4 — Choose Checklist Goals")
 if not step3_ok:
     st.info("Please choose a help category above first.")
+else:
+    st.caption("You can select one or more goals — the AI will give feedback on all of them.")
 
-st.selectbox(
+# Reset help_values if mode changed and previous selections don't belong to current mode
+current_vals = st.session_state.get("help_values", [])
+valid_vals = [v for v in current_vals if v in all_goal_options]
+if valid_vals != current_vals:
+    st.session_state["help_values"] = valid_vals
+
+st.multiselect(
     "What would you like feedback on?",
-    options=list(options_map.keys()),
-    format_func=lambda x: options_map[x],
-    key="help_value",
+    options=all_goal_options,
+    format_func=lambda x: goal_label_map.get(x, x),
+    key="help_values",
     disabled=not step3_ok,
 )
 st.markdown("</div>", unsafe_allow_html=True)
@@ -459,8 +486,10 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 col_a, col_b = st.columns([3, 1])
 with col_a:
-    submit = st.button("📨 Get Feedback", type="primary",
-                       use_container_width=True, disabled=not step3_ok)
+    submit = st.button(
+        "📨 Get Feedback", type="primary",
+        use_container_width=True, disabled=not step3_ok,
+    )
 with col_b:
     if st.button("🧹 Clear", use_container_width=True):
         st.session_state["feedback_text"] = ""
@@ -469,22 +498,23 @@ with col_b:
 if submit:
     writing  = st.session_state.get("writing_input", "").strip()
     custom_q = st.session_state.get("custom_question", "").strip()
-    hv       = st.session_state.get("help_value", "")
+    hvs      = st.session_state.get("help_values", [])
     md       = st.session_state.get("selected_mode", "")
     name     = st.session_state.get("student_name", "").strip()
 
     if not writing or len(writing) < 10:
         st.error("Please type or paste your advice reply email first (at least a few sentences).")
-    elif not hv and not custom_q:
-        st.error("Please pick a checklist goal or type your own question.")
+    elif not hvs and not custom_q:
+        st.error("Please select at least one checklist goal, or type your own question.")
     elif detect_write_for_me(custom_q):
         st.warning(
             "I can't write or finish your email for you.\n\n"
-            "Writing is YOUR skill to grow — try your best first, then I'll give you tips to make it even better!"
+            "Writing is YOUR skill to grow — try your best first, "
+            "then I'll give you tips to make it even better!"
         )
     else:
-        prompt     = build_prompt(writing, name, md, hv, custom_q)
-        help_label = options_map.get(hv, "") if hv else ""
+        prompt     = build_prompt(writing, name, md, hvs, custom_q)
+        goal_labels = [goal_label_map.get(v, v) for v in hvs]
         try:
             with st.spinner("Reviewing your email..."):
                 feedback = get_ai_feedback(prompt)
@@ -494,7 +524,7 @@ if submit:
                 "timestamp":       datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "mode":            md,
                 "mode_label":      MODE_DESC_MAP[md],
-                "help_goal":       help_label,
+                "help_goals":      goal_labels,
                 "custom_question": custom_q,
                 "writing":         writing,
                 "response":        feedback,
@@ -524,26 +554,30 @@ if st.session_state.get("interaction_history"):
     st.subheader("🚀 What's Next?")
     nx1, nx2 = st.columns(2)
     with nx1:
-        if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
-                     help="Keep the same email, choose a different goal"):
+        if st.button(
+            "🎯 Try Another Checklist Goal", use_container_width=True,
+            help="Keep the same email — choose a different goal",
+        ):
             st.session_state["_do_reset_more_help"] = True
             st.rerun()
     with nx2:
-        if st.button("✏️ Review a New Part of My Email", use_container_width=True,
-                     help="Clear the email box and start fresh"):
+        if st.button(
+            "✏️ Review a New Part of My Email", use_container_width=True,
+            help="Clear just the email box — your name and class stay",
+        ):
             st.session_state["_do_reset_fresh_start"] = True
             st.rerun()
 
     st.download_button(
         "💾 Save Learning Log",
         data=download_log_html(),
-        file_name=f"Learning_Log_{(st.session_state.get('student_name') or 'Student').replace(' ','_')}.html",
+        file_name=f"Learning_Log_{(st.session_state.get('student_name') or 'Student').replace(' ', '_')}.html",
         mime="text/html",
         use_container_width=True,
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Session History expander ──────────────────────────────────────────────────
+# ── Session History ───────────────────────────────────────────────────────────
 
 with st.expander("🧾 Session History"):
     history = st.session_state.get("interaction_history", [])
@@ -559,11 +593,13 @@ with st.expander("🧾 Session History"):
                 f"<span class='history-meta'>🎯 {item['mode_label']}</span>",
                 unsafe_allow_html=True,
             )
-            if item.get("help_goal"):
-                st.markdown(
-                    f"<span class='history-meta'>📋 {item['help_goal']}</span>",
-                    unsafe_allow_html=True,
-                )
+            goals = item.get("help_goals", [])
+            if goals:
+                for g in goals:
+                    st.markdown(
+                        f"<span class='history-meta'>📋 {g}</span>",
+                        unsafe_allow_html=True,
+                    )
             if item.get("custom_question"):
                 st.markdown(f"**Custom question:** {item['custom_question']}")
             st.markdown("**Writing sample**")
@@ -571,5 +607,3 @@ with st.expander("🧾 Session History"):
             st.markdown("**Feedback**")
             st.markdown(item["response"])
             st.markdown("</div>", unsafe_allow_html=True)
-
-st.caption("Powered by Groq · Adapted from the original POE bot")
