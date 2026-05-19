@@ -128,7 +128,7 @@ def build_prompt(writing, student_name, mode, help_value, custom_q):
     if help_value:
         prompt += f"Focus: {help_desc}.\n"
     if custom_q:
-        prompt += f'Student's question: "{custom_q}"\n'
+        prompt += f"Student's question: '{custom_q}'\n"
     prompt += f"\nAdvice Reply Email:\n---\n{writing}\n---"
     return prompt
 
