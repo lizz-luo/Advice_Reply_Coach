@@ -1,6 +1,8 @@
 import re
 import html
+from datetime import datetime
 import streamlit as st
+from groq import Groq
 
 st.set_page_config(page_title="Advice Reply Coach", page_icon="✉️", layout="centered")
 
@@ -80,6 +82,7 @@ def init_state():
         "pending_more_help": False,
         "pending_fresh_start": False,
         "feedback_text": "",
+        "api_ready": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -121,6 +124,26 @@ def refusal_text():
         "Writing is your skill to grow, so you need to try first. "
         "Your ideas matter, and I can still help by giving feedback, tips, and simple improvements to your own work."
     )
+
+
+def get_groq_client():
+    api_key = st.secrets.get("GROQ_API_KEY", "")
+    if not api_key:
+        raise ValueError("Missing GROQ_API_KEY in Streamlit secrets.")
+    return Groq(api_key=api_key)
+
+
+def get_ai_feedback(prompt: str) -> str:
+    client = get_groq_client()
+    completion = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        temperature=0.3,
+        messages=[
+            {"role": "system", "content": "You are a helpful writing coach for primary students. Follow the user's prompt exactly and return concise markdown."},
+            {"role": "user", "content": prompt},
+        ],
+    )
+    return completion.choices[0].message.content.strip()
 
 
 def escape_html(s: str) -> str:
@@ -168,7 +191,7 @@ def download_log_html():
         rows.append("<p><strong>My Email:</strong></p>")
         rows.append(f"<div class='sample'>{escape_html(entry['writing'])}</div>")
         rows.append("<p><strong>AI Feedback:</strong></p>")
-        rows.append(entry['response_html'])
+        rows.append(f"<div>{entry['response_html']}</div>")
         rows.append("</div>")
     rows.append("</body></html>")
     return ''.join(rows).encode('utf-8')
@@ -362,20 +385,26 @@ if submit:
         st.session_state.feedback_text = refusal_text()
     else:
         prompt = build_prompt(writing, name, mode, help_value, custom_q)
-        st.session_state.feedback_text = prompt
         help_label = options_map.get(help_value, "") if help_value else ""
-        response_html = st.markdown(prompt)
-        st.session_state.interaction_count += 1
-        st.session_state.interaction_history.append({
-            "timestamp": __import__('datetime').datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "mode": mode,
-            "mode_label": MODE_DESC_MAP[mode],
-            "help_goal": help_label,
-            "custom_question": custom_q,
-            "writing": writing,
-            "response": prompt,
-            "response_html": f"<pre style='white-space:pre-wrap;font-family:inherit'>{escape_html(prompt)}</pre>",
-        })
+        try:
+            with st.spinner("Groq is reviewing the email..."):
+                feedback = get_ai_feedback(prompt)
+            st.session_state.feedback_text = feedback
+            st.session_state.api_ready = True
+            st.session_state.interaction_count += 1
+            st.session_state.interaction_history.append({
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "mode": mode,
+                "mode_label": MODE_DESC_MAP[mode],
+                "help_goal": help_label,
+                "custom_question": custom_q,
+                "writing": writing,
+                "response": feedback,
+                "response_html": feedback,
+            })
+        except Exception as e:
+            st.session_state.feedback_text = ""
+            st.error(f"Groq API error: {e}")
 
 if st.session_state.feedback_text:
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
@@ -413,14 +442,17 @@ with st.expander("🧾 Session History"):
         st.write("No feedback sessions yet.")
     else:
         for i, item in enumerate(reversed(st.session_state.interaction_history), 1):
-            st.markdown(f"**Session {len(st.session_state.interaction_history)-i+1}** · {item['timestamp']}")
-            st.caption(item['mode_label'])
+            st.markdown("<div class='history-card'>", unsafe_allow_html=True)
+            st.markdown(f"**Session {len(st.session_state.interaction_history)-i+1}**")
+            st.markdown(f"<span class='history-meta'>🕒 {item['timestamp']}</span><span class='history-meta'>🎯 {item['mode_label']}</span>", unsafe_allow_html=True)
             if item.get('help_goal'):
-                st.write(f"Checklist Goal: {item['help_goal']}")
+                st.markdown(f"<span class='history-meta'>📋 {item['help_goal']}</span>", unsafe_allow_html=True)
             if item.get('custom_question'):
-                st.write(f"Custom Question: {item['custom_question']}")
-            st.text_area("Writing sample", value=item['writing'], height=120, disabled=True, key=f"history_writing_{i}")
-            st.text_area("Feedback", value=item['response'], height=180, disabled=True, key=f"history_response_{i}")
-            st.divider()
+                st.markdown(f"**Custom Question:** {item['custom_question']}")
+            st.markdown("**Writing sample**")
+            st.code(item['writing'], language=None)
+            st.markdown("**Feedback**")
+            st.markdown(item['response'])
+            st.markdown("</div>", unsafe_allow_html=True)
 
 st.caption("Created from your original POE bot structure, now adapted for Streamlit deployment.")
