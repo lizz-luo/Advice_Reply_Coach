@@ -254,20 +254,17 @@ if scroll_target:
         f"""
         <script>
         const targetId = {scroll_target!r};
+        const parentDoc = window.parent.document;
         function doScroll() {{
-          const parentDoc = window.parent.document;
           const el = parentDoc.getElementById(targetId) || document.getElementById(targetId);
-          if (el) {{
-            el.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
-            return true;
-          }}
-          return false;
+          if (!el) return false;
+          const rect = el.getBoundingClientRect();
+          const parentWin = window.parent;
+          const absoluteTop = rect.top + parentWin.scrollY;
+          parentWin.scrollTo({{ top: Math.max(0, absoluteTop - 12), behavior: 'auto' }});
+          return true;
         }}
-        let tries = 0;
-        const timer = setInterval(() => {{
-          tries += 1;
-          if (doScroll() || tries > 20) clearInterval(timer);
-        }}, 200);
+        requestAnimationFrame(() => setTimeout(doScroll, 80));
         </script>
         """,
         height=0,
