@@ -58,21 +58,6 @@ MODE_DESC_MAP = {
     "organisation": "ORGANISATION (how the email is structured)",
 }
 
-WRITE_FOR_ME_PATTERNS = [
-    r"finish\s+(the\s+)?(writing|essay|email|reply|composition|work)\s*(for\s+me)?",
-    r"write\s+(the\s+)?(rest|remaining|more|ending|body|essay|email|reply|composition)\s*(for\s+me)?",
-    r"complete\s+(the\s+)?(writing|essay|email|reply|composition|work)\s*(for\s+me)?",
-    r"do\s+(the\s+)?(writing|essay|email|reply|composition|work)\s*(for\s+me)?",
-    r"help\s+me\s+(finish|complete|write)\s+(it|the\s+(rest|writing|essay|email|reply))",
-    r"can\s+you\s+(write|finish|complete)\s+(it|the|my|this)",
-    r"rewrite\s+(it|the|my|this)\s*(whole|entire|full)?",
-    r"write\s+(it|this|everything)\s+for\s+me",
-    r"just\s+(write|do|finish)\s+(it|this)\s*(for\s+me)?",
-    r"write\s+for\s+me",
-    r"do\s+(it|this)\s+for\s+me",
-    r"generate\s+(a\s+)?(writing|essay|email|reply|composition)",
-    r"create\s+(a\s+)?(writing|essay|email|reply|composition)\s*(for\s+me)?",
-]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -93,12 +78,6 @@ def init_state():
         if k not in st.session_state:
             st.session_state[k] = v
 
-
-def detect_write_for_me(text: str) -> bool:
-    if not text:
-        return False
-    lower = text.lower().strip()
-    return any(re.search(p, lower, re.I) for p in WRITE_FOR_ME_PATTERNS)
 
 
 def word_count(text: str) -> int:
@@ -236,12 +215,54 @@ def do_reset_more_help():
 
 
 def do_reset_fresh_start():
-    """Keep student info; reset writing + everything from Step 2 onwards."""
-    st.session_state["writing_input"]   = ""
+    """Keep student info + writing; reset only Step 3 and beyond."""
     st.session_state["selected_mode"]   = "content"
     st.session_state["help_values"]     = []
     st.session_state["custom_question"] = ""
     st.session_state["feedback_text"]   = ""
+
+
+def do_clear():
+    """Clear everything except student info (Step 1)."""
+    st.session_state["writing_input"]       = ""
+    st.session_state["selected_mode"]       = "content"
+    st.session_state["help_values"]         = []
+    st.session_state["custom_question"]     = ""
+    st.session_state["feedback_text"]       = ""
+    st.session_state["interaction_history"] = []
+    st.session_state["interaction_count"]   = 0
+
+
+# ── LLM-based write-for-me detection ─────────────────────────────────────────
+
+def llm_detect_write_for_me(custom_q: str, writing: str) -> bool:
+    """Ask the LLM whether the student is trying to get AI to do their work."""
+    if not custom_q.strip():
+        return False
+    api_key = st.secrets.get("GROQ_API_KEY", "")
+    if not api_key:
+        return False
+    client = Groq(api_key=api_key)
+    check_prompt = (
+        "You are a safeguard for a primary school writing tool. "
+        "A student has typed a question into a feedback tool. "
+        "Decide whether the student is asking the AI to write, complete, rewrite, "
+        "or finish their work for them — rather than asking for feedback or tips.\n\n"
+        f"Student's question: \"{custom_q}\"\n\n"
+        "Reply with ONLY one word: YES if they are asking the AI to do their writing, "
+        "NO if they are genuinely asking for feedback or advice."
+    )
+    try:
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            max_tokens=5,
+            messages=[{"role": "user", "content": check_prompt}],
+        )
+        answer = resp.choices[0].message.content.strip().upper()
+        return answer.startswith("YES")
+    except Exception:
+        return False
 
 
 # ── App entry point ───────────────────────────────────────────────────────────
@@ -253,6 +274,15 @@ if st.session_state.pop("_do_reset_more_help", False):
     do_reset_more_help()
 if st.session_state.pop("_do_reset_fresh_start", False):
     do_reset_fresh_start()
+if st.session_state.pop("_do_clear", False):
+    do_clear()
+
+# Scroll to top after clear
+if st.session_state.pop("_scroll_top", False):
+    st.markdown(
+        "<script>window.scrollTo({top:0,behavior:'smooth'});</script>",
+        unsafe_allow_html=True,
+    )
 
 # ── Global CSS ────────────────────────────────────────────────────────────────
 
@@ -492,7 +522,8 @@ with col_a:
     )
 with col_b:
     if st.button("🧹 Clear", use_container_width=True):
-        st.session_state["feedback_text"] = ""
+        st.session_state["_do_clear"]    = True
+        st.session_state["_scroll_top"]  = True
         st.rerun()
 
 if submit:
@@ -506,7 +537,7 @@ if submit:
         st.error("Please type or paste your advice reply email first (at least a few sentences).")
     elif not hvs and not custom_q:
         st.error("Please select at least one checklist goal, or type your own question.")
-    elif detect_write_for_me(custom_q):
+    elif llm_detect_write_for_me(custom_q, writing):
         st.warning(
             "I can't write or finish your email for you.\n\n"
             "Writing is YOUR skill to grow — try your best first, "
