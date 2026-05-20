@@ -203,6 +203,7 @@ def get_ai_feedback(prompt: str) -> str:
                     "Follow the user prompt exactly and return concise markdown. "
                     "When the prompt shows a format with ❌, ✅, and 💡 on separate lines, "
                     "always keep each of these on its own line. Never merge them into one paragraph.",
+                    ),
             },
             {"role": "user", "content": prompt},
         ],
