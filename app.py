@@ -28,23 +28,23 @@ HELP_HINTS = {
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I address the reader's problem?"},
-        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice?"},
-        {"value": "explain_advice",   "label": "🔍 Did I explain how each advice can help?"},
-        {"value": "caring_tone",      "label": "❤️ Did I use a caring and encouraging tone?"},
+        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem? (= talk about the reader's problem)"},
+        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
+        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help? (= say how each tip can help)"},
+        {"value": "caring_tone",      "label": "❤️ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
     ],
     "language": [
-        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs (e.g. should, could, might)?"},
-        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences (e.g. If you..., you could...)?"},
-        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show empathy?"},
-        {"value": "linking_words",         "label": "🔗 Did I use appropriate linking words?"},
-        {"value": "spelling_punctuation",  "label": "🔤 Are my spelling and punctuation correct?"},
+        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs correctly? (e.g. should, could, might)"},
+        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences? (e.g. If you…, you could…)"},
+        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show I understand? (e.g. I understand how you feel)"},
+        {"value": "linking_words",         "label": "🔗 Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
+        {"value": "spelling_punctuation",  "label": "✏ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
     ],
     "organisation": [
-        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off?"},
-        {"value": "acknowledge_problem", "label": "📨 Did I acknowledge the reader's problem in the opening?"},
-        {"value": "separate_paragraphs", "label": "📄 Did I organise my advice in separate paragraphs?"},
-        {"value": "encouraging_closing", "label": "🌟 Did I end with an encouraging closing?"},
+        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
+        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first? (= show you understand first)"},
+        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph? (= one idea per paragraph)"},
+        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support? (= end with hope and support)"},
     ],
 }
 
