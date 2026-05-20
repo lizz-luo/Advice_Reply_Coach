@@ -189,6 +189,12 @@ def get_groq_client():
         raise ValueError("GROQ_API_KEY is not set in Streamlit secrets.")
     return Groq(api_key=api_key)
 
+def post_process_feedback(text: str) -> str:
+    markers = ["❌", "✅", "💡", "📌", "Example 1:", "Example 2:"]
+    for m in markers:
+        text = text.replace(m, f"\n\n{m}")
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
 
 def get_ai_feedback(prompt: str) -> str:
     client = get_groq_client()
@@ -203,7 +209,9 @@ def get_ai_feedback(prompt: str) -> str:
             {"role": "user", "content": prompt},
         ],
     )
-    return completion.choices[0].message.content.strip()
+     
+    raw = completion.choices[0].message.content.strip()
+    return post_process_feedback(raw)
 
 
 def llm_detect_write_for_me(custom_q: str) -> bool:
