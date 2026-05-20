@@ -9,22 +9,39 @@ st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout=
 
 HKT = ZoneInfo("Asia/Hong_Kong")
 
+# hint shown under each checklist goal in Step 4
+HELP_HINTS = {
+    "address_problem":        "talk about the reader's problem",
+    "two_advice":             "give 2 or more ideas to help",
+    "explain_advice":         "say WHY each idea will help",
+    "caring_tone":            "sound kind and encouraging",
+    "modal_verbs":            "use: should / could / might / would",
+    "conditional_sentences":  "use: If you…, you could…",
+    "empathy_phrases":        "use: I understand how you feel…",
+    "linking_words":          "use: firstly / moreover / in addition",
+    "spelling_punctuation":   "check all spelling and full stops",
+    "greeting_signoff":       "start with Dear… end with Best wishes…",
+    "acknowledge_problem":    "show you understand their problem first",
+    "separate_paragraphs":    "one idea per paragraph",
+    "encouraging_closing":    "end with something hopeful",
+}
+
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem", "label": "🎯 Did I address the reader's problem?"},
-        {"value": "two_advice", "label": "💡 Did I give at least 2 pieces of advice?"},
-        {"value": "explain_advice", "label": "🔍 Did I explain how each piece of advice can help?"},
-        {"value": "caring_tone", "label": "❤️ Did I use a caring and encouraging tone?"},
+        {"value": "address_problem",  "label": "🎯 Did I address the reader's problem?"},
+        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice?"},
+        {"value": "explain_advice",   "label": "🔍 Did I explain how each advice can help?"},
+        {"value": "caring_tone",      "label": "❤️ Did I use a caring and encouraging tone?"},
     ],
     "language": [
-        {"value": "modal_verbs", "label": "💪 Did I use modal verbs (e.g. should, could, might)?"},
+        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs (e.g. should, could, might)?"},
         {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences (e.g. If you..., you could...)?"},
-        {"value": "empathy_phrases", "label": "🤗 Did I use phrases to show empathy?"},
-        {"value": "linking_words", "label": "🔗 Did I use appropriate linking words?"},
-        {"value": "spelling_punctuation", "label": "🔤 Are my spelling and punctuation correct?"},
+        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show empathy?"},
+        {"value": "linking_words",         "label": "🔗 Did I use appropriate linking words?"},
+        {"value": "spelling_punctuation",  "label": "🔤 Are my spelling and punctuation correct?"},
     ],
     "organisation": [
-        {"value": "greeting_signoff", "label": "👋 Did I include a proper greeting and sign-off?"},
+        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off?"},
         {"value": "acknowledge_problem", "label": "📨 Did I acknowledge the reader's problem in the opening?"},
         {"value": "separate_paragraphs", "label": "📄 Did I organise my advice in separate paragraphs?"},
         {"value": "encouraging_closing", "label": "🌟 Did I end with an encouraging closing?"},
@@ -32,30 +49,30 @@ HELP_OPTIONS = {
 }
 
 MODE_DESCRIPTIONS = {
-    "content": "💡 Help me with what I wrote about — feedback on problem response, advice, explanations, and tone.",
-    "language": "🔤 Help me with my words and sentences — feedback on modal verbs, conditionals, empathy phrases, linking words, spelling, and punctuation.",
+    "content":      "💡 Help me with what I wrote about — feedback on problem response, advice, explanations, and tone.",
+    "language":     "🔤 Help me with my words and sentences — feedback on modal verbs, conditionals, empathy phrases, linking words, spelling, and punctuation.",
     "organisation": "📄 Help me with how I organised my email — feedback on greeting, sign-off, paragraph structure, and closing.",
 }
 
 HELP_DESC_MAP = {
-    "address_problem": "whether the student clearly addressed and responded to the reader's problem or concern",
-    "two_advice": "whether the student gave at least 2 separate, distinct pieces of advice",
-    "explain_advice": "whether the student explained HOW each piece of advice can help the reader",
-    "caring_tone": "whether the student used a caring, warm, and encouraging tone throughout",
-    "modal_verbs": "whether the student used modal verbs appropriately (e.g. should, could, might, would)",
-    "conditional_sentences": "whether the student used conditional sentences (e.g. If you try..., you could...)",
-    "empathy_phrases": "whether the student used phrases to show empathy (e.g. I understand how you feel)",
-    "linking_words": "whether the student used appropriate linking words (e.g. firstly, moreover, in addition)",
-    "spelling_punctuation": "whether spelling and punctuation are correct throughout",
-    "greeting_signoff": "whether the student included a proper greeting and sign-off",
-    "acknowledge_problem": "whether the student acknowledged the reader's problem in the opening",
-    "separate_paragraphs": "whether each piece of advice is in its own paragraph",
-    "encouraging_closing": "whether the student ended with an encouraging closing",
+    "address_problem":        "whether the student clearly addressed and responded to the reader's problem or concern",
+    "two_advice":             "whether the student gave at least 2 separate, distinct pieces of advice",
+    "explain_advice":         "whether the student explained HOW each piece of advice can help the reader",
+    "caring_tone":            "whether the student used a caring, warm, and encouraging tone throughout",
+    "modal_verbs":            "whether the student used modal verbs appropriately (e.g. should, could, might, would)",
+    "conditional_sentences":  "whether the student used conditional sentences (e.g. If you try..., you could...)",
+    "empathy_phrases":        "whether the student used phrases to show empathy (e.g. I understand how you feel)",
+    "linking_words":          "whether the student used appropriate linking words (e.g. firstly, moreover, in addition)",
+    "spelling_punctuation":   "whether spelling and punctuation are correct throughout",
+    "greeting_signoff":       "whether the student included a proper greeting and sign-off",
+    "acknowledge_problem":    "whether the student acknowledged the reader's problem in the opening",
+    "separate_paragraphs":    "whether each piece of advice is in its own paragraph",
+    "encouraging_closing":    "whether the student ended with an encouraging closing",
 }
 
 MODE_DESC_MAP = {
-    "content": "CONTENT (what the student wrote about)",
-    "language": "LANGUAGE (words, grammar, and sentences)",
+    "content":      "CONTENT (what the student wrote about)",
+    "language":     "LANGUAGE (words, grammar, and sentences)",
     "organisation": "ORGANISATION (how the email is structured)",
 }
 
@@ -66,18 +83,18 @@ def hk_now_str() -> str:
 
 def init_state():
     defaults = {
-        "student_name": "",
-        "student_class": "",
-        "student_number": "",
-        "writing_input": "",
-        "selected_mode": "content",
-        "help_values": [],
-        "custom_question": "",
-        "feedback_text": "",
+        "student_name":       "",
+        "student_class":      "",
+        "student_number":     "",
+        "writing_input":      "",
+        "selected_mode":      "content",
+        "help_values":        [],
+        "custom_question":    "",
+        "feedback_text":      "",
         "interaction_history": [],
-        "interaction_count": 0,
-        "step1_confirmed": False,
-        "step2_confirmed": False,
+        "interaction_count":  0,
+        "step1_confirmed":    False,
+        "step2_confirmed":    False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -172,29 +189,28 @@ def escape_html(s: str) -> str:
 
 def do_reset_after_step2():
     st.session_state["selected_mode"] = "content"
-    st.session_state["help_values"] = []
+    st.session_state["help_values"]   = []
     st.session_state["custom_question"] = ""
-    st.session_state["feedback_text"] = ""
+    st.session_state["feedback_text"]   = ""
 
 
 def do_clear():
-    st.session_state["writing_input"] = ""
-    st.session_state["selected_mode"] = "content"
-    st.session_state["help_values"] = []
-    st.session_state["custom_question"] = ""
-    st.session_state["feedback_text"] = ""
+    st.session_state["writing_input"]      = ""
+    st.session_state["selected_mode"]      = "content"
+    st.session_state["help_values"]        = []
+    st.session_state["custom_question"]    = ""
+    st.session_state["feedback_text"]      = ""
     st.session_state["interaction_history"] = []
-    st.session_state["interaction_count"] = 0
-    st.session_state["step1_confirmed"] = False
-    st.session_state["step2_confirmed"] = False
-
+    st.session_state["interaction_count"]  = 0
+    st.session_state["step1_confirmed"]    = False
+    st.session_state["step2_confirmed"]    = False
 
 
 def download_log_html() -> bytes:
     history = st.session_state.interaction_history
     name = st.session_state.get("student_name", "").strip() or "Student"
-    cls = st.session_state.get("student_class", "").strip()
-    num = st.session_state.get("student_number", "").strip()
+    cls  = st.session_state.get("student_class",  "").strip()
+    num  = st.session_state.get("student_number", "").strip()
     rows = [
         "<!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'>",
         "<meta name='viewport' content='width=device-width, initial-scale=1.0'>",
@@ -219,7 +235,8 @@ table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{backgr
         rows += [
             "<div class='session'>",
             f"<h3>Session {i}</h3>",
-            f"<div class='tag'>{escape_html(entry['timestamp'])}</div><div class='tag'>{escape_html(entry['mode_label'])}</div>",
+            f"<div class='tag'>{escape_html(entry['timestamp'])}</div>"
+            f"<div class='tag'>{escape_html(entry['mode_label'])}</div>",
         ]
         goals = entry.get("help_goals", [])
         if goals:
@@ -237,6 +254,8 @@ table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{backgr
     return "".join(rows).encode("utf-8")
 
 
+# ── App start ────────────────────────────────────────────────────────────────
+
 init_state()
 
 if st.session_state.pop("_do_reset_after_step2", False):
@@ -244,87 +263,67 @@ if st.session_state.pop("_do_reset_after_step2", False):
 if st.session_state.pop("_do_clear", False):
     do_clear()
 
-
 st.markdown(
     """
 <style>
 :root {
-    --bg: #f0f9ff;
-    --bg-soft: #f8fafc;
-    --panel: #f3f4f6;
-    --panel-border: #e2e8f0;
-    --text: #0f172a;
-    --muted: #475569;
-    --accent: #0369a1;
-    --accent-soft: #e0f2fe;
-    --input-bg: #ffffff;
-    --code-bg: #ffffff;
+    --bg: #f0f9ff; --bg-soft: #f8fafc; --panel: #f3f4f6;
+    --panel-border: #e2e8f0; --text: #0f172a; --muted: #475569;
+    --accent: #0369a1; --accent-soft: #e0f2fe;
+    --input-bg: #ffffff; --code-bg: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #0f172a;
-        --bg-soft: #111827;
-        --panel: #1f2937;
-        --panel-border: #334155;
-        --text: #f8fafc;
-        --muted: #cbd5e1;
-        --accent: #7dd3fc;
-        --accent-soft: #082f49;
-        --input-bg: #111827;
-        --code-bg: #0b1220;
+        --bg: #0f172a; --bg-soft: #111827; --panel: #1f2937;
+        --panel-border: #334155; --text: #f8fafc; --muted: #cbd5e1;
+        --accent: #7dd3fc; --accent-soft: #082f49;
+        --input-bg: #111827; --code-bg: #0b1220;
     }
 }
 .stApp { background: linear-gradient(160deg, var(--bg) 0%, var(--bg-soft) 100%); color: var(--text); }
 .block-container { max-width: 760px; padding-top: 2rem; padding-bottom: 4rem; }
 .panel, .hero {
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: 18px;
-    box-shadow: 0 2px 12px rgba(14,165,233,0.06);
-    color: var(--text);
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 18px; box-shadow: 0 2px 12px rgba(14,165,233,0.06); color: var(--text);
 }
-.hero { padding: 1.8rem 1.5rem; margin-bottom: 1rem; text-align: center; }
+.hero  { padding: 1.8rem 1.5rem; margin-bottom: 1rem; text-align: center; }
 .panel { padding: 1.25rem 1.25rem 0.5rem; margin-bottom: 1rem; }
 .small-note { color: var(--muted); font-size: 0.92rem; margin: 0; }
-.badge { display:inline-block; padding:0.35rem 0.9rem; border-radius:999px; font-size:0.82rem; font-weight:700; background:var(--accent-soft); color:var(--accent); border:1px solid var(--panel-border); margin-bottom:0.75rem; }
-.help-chip, .history-meta { display:inline-block; padding:0.28rem 0.65rem; border-radius:999px; font-size:0.78rem; font-weight:700; background:var(--accent-soft); color:var(--accent); border:1px solid var(--panel-border); margin:0 0.4rem 0.3rem 0; }
-input, textarea, .stTextInput input, .stTextArea textarea, div[data-baseweb="input"] input, div[data-baseweb="textarea"] textarea, div[data-baseweb="base-input"] input, div[data-baseweb="select"] > div:first-child {
-    background-color: var(--input-bg) !important;
-    color: var(--text) !important;
+.hint-text  { color: var(--muted); font-size: 0.82rem; margin: 0.35rem 0 0 0; font-style: italic; }
+.badge { display:inline-block; padding:0.35rem 0.9rem; border-radius:999px; font-size:0.82rem; font-weight:700;
+         background:var(--accent-soft); color:var(--accent); border:1px solid var(--panel-border); margin-bottom:0.75rem; }
+.help-chip, .history-meta { display:inline-block; padding:0.28rem 0.65rem; border-radius:999px; font-size:0.78rem;
+         font-weight:700; background:var(--accent-soft); color:var(--accent); border:1px solid var(--panel-border); margin:0 0.4rem 0.3rem 0; }
+input, textarea, .stTextInput input, .stTextArea textarea,
+div[data-baseweb="input"] input, div[data-baseweb="textarea"] textarea,
+div[data-baseweb="base-input"] input, div[data-baseweb="select"] > div:first-child {
+    background-color: var(--input-bg) !important; color: var(--text) !important;
 }
 textarea::placeholder, input::placeholder { color: var(--muted) !important; }
-label, .stMarkdown, .stCaption, .stRadio, .stMultiSelect, .stSelectbox, .stTextInput, .stTextArea, .stExpander, .stAlert { color: var(--text) !important; }
+label, .stMarkdown, .stCaption, .stRadio, .stMultiSelect, .stSelectbox,
+.stTextInput, .stTextArea, .stExpander, .stAlert { color: var(--text) !important; }
 hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; background-color: var(--panel-border) !important; }
 .feedback-box, .history-card { background: var(--input-bg); border: 1px solid var(--panel-border); border-radius: 14px; }
 .feedback-box { padding: 1rem 1.1rem; margin-top: 0.5rem; }
 .history-card { padding: 1rem 1rem 0.5rem; margin-bottom: 0.85rem; }
-.next-step-btn button {
+.next-step-btn > div > button {
     background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
-    color: #ffffff !important;
-    border: none !important;
-    font-weight: 700 !important;
+    color: #ffffff !important; border: none !important; font-weight: 700 !important;
 }
 @media (prefers-color-scheme: dark) {
-    .next-step-btn button {
+    .next-step-btn > div > button {
         background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important;
         color: #082f49 !important;
     }
 }
-div[data-testid="stCodeBlock"] pre, .stCode pre {
-    width: 100% !important;
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
-    overflow-x: visible !important;
-    background: var(--code-bg) !important;
-    color: var(--text) !important;
-}
+.goal-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; padding-left: 0.1rem; }
 .footer-note { text-align:center; color: var(--muted); font-size:0.85rem; margin-top:2rem; padding-bottom:1rem; }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
+# ── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
     """
 <div class='hero'>
@@ -336,34 +335,45 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ── Step 1 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("👋 Step 1 — About You")
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.text_input("First Name", key="student_name", placeholder="e.g. Sarah")
+    st.text_input("First Name",   key="student_name",   placeholder="e.g. Sarah")
 with c2:
-    st.text_input("Class", key="student_class", placeholder="e.g. 1A")
+    st.text_input("Class",        key="student_class",  placeholder="e.g. 1A")
 with c3:
     st.text_input("Class Number", key="student_number", placeholder="e.g. 12")
 
 st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
 if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
     if all([
-        st.session_state.get("student_name", "").strip(),
-        st.session_state.get("student_class", "").strip(),
+        st.session_state.get("student_name",   "").strip(),
+        st.session_state.get("student_class",  "").strip(),
         st.session_state.get("student_number", "").strip(),
     ]):
         st.session_state["step1_confirmed"] = True
+        # no st.rerun() — let Streamlit's natural rerun handle it
     else:
-        st.warning("Please complete all Step 1 fields before continuing.")
+        st.warning("Please complete all three fields before continuing.")
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 step1_ok = st.session_state.get("step1_confirmed", False)
 
+# ── Step 2 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("✍️ Step 2 — Your Advice Reply Email")
 if not step1_ok:
-    st.info("Please complete Step 1 and click Confirm Step 1 first.")
+    st.info("Please complete Step 1 first.")
+
+# hint text above textarea
+st.markdown(
+    "<p class='hint-text'>ℹ️ You can paste your whole email or just the part you want help with — "
+    "like your greeting, a paragraph, or your ending.</p>",
+    unsafe_allow_html=True,
+)
 
 st.text_area(
     "Paste or type your advice reply email below",
@@ -374,21 +384,25 @@ st.text_area(
 )
 wc = word_count(st.session_state.get("writing_input", ""))
 st.caption(f"{wc} word{'s' if wc != 1 else ''}")
+
 st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
 if st.button("✅ Next Step", use_container_width=True, disabled=not step1_ok, key="step2_next"):
     if len(st.session_state.get("writing_input", "").strip()) > 10:
         st.session_state["step2_confirmed"] = True
-        st.rerun()
+        do_reset_after_step2()
+        # no st.rerun() — let Streamlit handle it
     else:
         st.warning("Please paste or type at least a few sentences before continuing.")
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 step2_ok = st.session_state.get("step2_confirmed", False)
 
+# ── Step 3 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("🎯 Step 3 — What Would You Like Help With?")
 if not step2_ok:
-    st.info("Please complete Step 2 and click Confirm Step 2 first.")
+    st.info("Please complete Step 2 first.")
 
 mode = st.radio(
     "Choose a help category",
@@ -403,24 +417,28 @@ if step2_ok and mode:
 st.markdown("</div>", unsafe_allow_html=True)
 
 step3_ok = step2_ok and bool(mode)
+
+# build goal options for current mode
 all_goal_options = []
-goal_label_map = {}
+goal_label_map   = {}
 if step3_ok:
     for item in HELP_OPTIONS[mode]:
         all_goal_options.append(item["value"])
         goal_label_map[item["value"]] = item["label"]
 
 current_vals = st.session_state.get("help_values", [])
-valid_vals = [v for v in current_vals if v in all_goal_options]
+valid_vals   = [v for v in current_vals if v in all_goal_options]
 if valid_vals != current_vals:
     st.session_state["help_values"] = valid_vals
 
+# ── Step 4 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("📋 Step 4 — Choose Checklist Goals")
 if not step3_ok:
-    st.info("Please complete Step 2 first.")
+    st.info("Please complete Step 2 and choose a category first.")
 else:
     st.caption("You can select one or more goals — the AI will give feedback on all of them.")
+
 st.multiselect(
     "What would you like feedback on?",
     options=all_goal_options,
@@ -428,8 +446,21 @@ st.multiselect(
     key="help_values",
     disabled=not step3_ok,
 )
+
+# show hints for currently selected goals
+if step3_ok and st.session_state.get("help_values"):
+    for v in st.session_state["help_values"]:
+        hint = HELP_HINTS.get(v, "")
+        if hint:
+            label = goal_label_map.get(v, v)
+            st.markdown(
+                f"<div class='goal-hint'>→ <strong>{label}</strong>: {hint}</div>",
+                unsafe_allow_html=True,
+            )
+
 st.markdown("</div>", unsafe_allow_html=True)
 
+# ── Step 5 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
 st.subheader("💬 Step 5 — Ask Your Own Question *(optional)*")
 st.text_area(
@@ -441,6 +472,7 @@ st.text_area(
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
+# ── Submit ───────────────────────────────────────────────────────────────────
 col_a, col_b = st.columns([3, 1])
 with col_a:
     submit = st.button("📨 Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
@@ -450,11 +482,11 @@ with col_b:
         st.rerun()
 
 if submit:
-    writing = st.session_state.get("writing_input", "").strip()
+    writing  = st.session_state.get("writing_input",  "").strip()
     custom_q = st.session_state.get("custom_question", "").strip()
-    hvs = st.session_state.get("help_values", [])
-    md = st.session_state.get("selected_mode", "")
-    name = st.session_state.get("student_name", "").strip()
+    hvs      = st.session_state.get("help_values",    [])
+    md       = st.session_state.get("selected_mode",  "")
+    name     = st.session_state.get("student_name",   "").strip()
 
     if not writing or len(writing) < 10:
         st.error("Please type or paste your advice reply email first (at least a few sentences).")
@@ -463,7 +495,7 @@ if submit:
     elif llm_detect_write_for_me(custom_q):
         st.warning("I can't write or finish your email for you. Try your best first, then I will give you tips to improve it.")
     else:
-        prompt = build_prompt(writing, name, md, hvs, custom_q)
+        prompt      = build_prompt(writing, name, md, hvs, custom_q)
         goal_labels = [goal_label_map.get(v, v) for v in hvs]
         try:
             with st.spinner("Reviewing your email..."):
@@ -472,18 +504,19 @@ if submit:
             st.session_state["interaction_count"] += 1
             st.session_state["interaction_history"].append(
                 {
-                    "timestamp": hk_now_str(),
-                    "mode": md,
-                    "mode_label": MODE_DESC_MAP[md],
-                    "help_goals": goal_labels,
+                    "timestamp":    hk_now_str(),
+                    "mode":         md,
+                    "mode_label":   MODE_DESC_MAP[md],
+                    "help_goals":   goal_labels,
                     "custom_question": custom_q,
-                    "writing": writing,
-                    "response": feedback,
+                    "writing":      writing,
+                    "response":     feedback,
                 }
             )
         except Exception as e:
             st.error(f"Groq API error: {e}")
 
+# ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
     st.subheader("✨ Your Feedback")
@@ -494,16 +527,19 @@ if st.session_state.get("feedback_text"):
     st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+# ── What's Next ───────────────────────────────────────────────────────────────
 if st.session_state.get("interaction_history"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
     st.subheader("🚀 What's Next?")
     nx1, nx2 = st.columns(2)
     with nx1:
-        if st.button("🎯 Try Another Checklist Goal", use_container_width=True, help="Keep the same email — choose different goals"):
+        if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
+                     help="Keep the same email — choose different goals"):
             st.session_state["_do_reset_after_step2"] = True
             st.rerun()
     with nx2:
-        if st.button("✏️ Review a New Part of My Email", use_container_width=True, help="Keep your current email and reset from Step 3 onward"):
+        if st.button("✏️ Review a New Part of My Email", use_container_width=True,
+                     help="Keep your current email and reset from Step 3 onward"):
             st.session_state["_do_reset_after_step2"] = True
             st.rerun()
 
@@ -516,6 +552,7 @@ if st.session_state.get("interaction_history"):
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
+# ── Session History ───────────────────────────────────────────────────────────
 with st.expander("🧾 Session History"):
     history = st.session_state.get("interaction_history", [])
     if not history:
@@ -549,5 +586,8 @@ with st.expander("🧾 Session History"):
             st.markdown(item["response"])
             st.markdown("</div>", unsafe_allow_html=True)
 
-
-st.markdown("<div class='footer-note'>© 2026 Becky Cheung. All Rights Reserved.</div>", unsafe_allow_html=True)
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.markdown(
+    "<div class='footer-note'>© 2026 Becky Cheung. All Rights Reserved.</div>",
+    unsafe_allow_html=True,
+)
