@@ -376,6 +376,7 @@ st.markdown(
 )
 
 st.text_area(
+    " ",
     key="writing_input",
     placeholder="Paste your whole email here, or just the part you want feedback on...",
     height=220,
