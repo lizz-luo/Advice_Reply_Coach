@@ -28,10 +28,10 @@ HELP_HINTS = {
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem?"},
-        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice?"},
-        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help?"},
-        {"value": "caring_tone",      "label": "❤️ Did I use kind, warm, friendly words?"},
+        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem? (= talk about the reader's problem)"},
+        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
+        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help? (= say how each tip can help)"},
+        {"value": "caring_tone",      "label": "❤ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
     ],
     "language": [
         {"value": "modal_verbs",           "label": "💪 Did I use modal verbs correctly? (e.g. should, could, might)"},
@@ -43,9 +43,9 @@ HELP_OPTIONS = {
     ],
     "organisation": [
         {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
-        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first?"},
-        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph?"},
-        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support?"},
+        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first? (= show you understand first)"},
+        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph? (= one idea per paragraph)"},
+        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support? (= end with hope and support)"},
     ],
 }
 
