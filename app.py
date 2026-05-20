@@ -354,7 +354,6 @@ if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
         st.session_state.get("student_number", "").strip(),
     ]):
         st.session_state["step1_confirmed"] = True
-        st.rerun()
     else:
         st.warning("Please complete all Step 1 fields before continuing.")
 st.markdown("</div>", unsafe_allow_html=True)
