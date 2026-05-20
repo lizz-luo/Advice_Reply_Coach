@@ -28,24 +28,23 @@ HELP_HINTS = {
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem? (= talk about the reader's problem)"},
-        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
-        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help? (= say how each tip can help)"},
-        {"value": "caring_tone",      "label": "❤ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
+        {"value": "address_problem",  "label": "🎯 Did I address the reader's problem?"},
+        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice?"},
+        {"value": "explain_advice",   "label": "🔍 Did I explain how each advice can help?"},
+        {"value": "caring_tone",      "label": "❤️ Did I use a caring and encouraging tone?"},
     ],
     "language": [
-        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs correctly? (e.g. should, could, might)"},
-        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences? (e.g. If you…, you could…)"},
-        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show I understand? (e.g. I understand how you feel)"},
-        {"value": "linking_words",         "label": "🔗 Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
-        {"value": "spelling_punctuation",  "label": "✏️ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
-        {"value": "power_words",           "label": "⚡ Did I use strong, expressive words instead of basic ones? (e.g. sad → upset, good → wonderful, happy → delighted)"},
+        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs (e.g. should, could, might)?"},
+        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences (e.g. If you..., you could...)?"},
+        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show empathy?"},
+        {"value": "linking_words",         "label": "🔗 Did I use appropriate linking words?"},
+        {"value": "spelling_punctuation",  "label": "🔤 Are my spelling and punctuation correct?"},
     ],
     "organisation": [
-        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
-        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first? (= show you understand first)"},
-        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph? (= one idea per paragraph)"},
-        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support? (= end with hope and support)"},
+        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off?"},
+        {"value": "acknowledge_problem", "label": "📨 Did I acknowledge the reader's problem in the opening?"},
+        {"value": "separate_paragraphs", "label": "📄 Did I organise my advice in separate paragraphs?"},
+        {"value": "encouraging_closing", "label": "🌟 Did I end with an encouraging closing?"},
     ],
 }
 
@@ -109,32 +108,74 @@ def word_count(text: str) -> int:
 
 def build_prompt(writing, student_name, mode, help_values, custom_q):
     category_name = MODE_DESC_MAP[mode]
-    goals_text = ""
-    if help_values:
-        descs = [HELP_DESC_MAP[v] for v in help_values if v in HELP_DESC_MAP]
-        goals_text = "\n".join(f"- {d}" for d in descs)
+
+    # Build goal labels and descriptions for selected goals
+    goal_labels = []
+    goals_desc_lines = []
+    for v in help_values:
+        if v in HELP_DESC_MAP:
+            # Get short label (strip emoji prefix, take text before " — " or full label)
+            raw = next((o["label"] for opts in HELP_OPTIONS.values() for o in opts if o["value"] == v), v)
+            # Use just the key name as focus area label (clean short form)
+            focus = raw.split("—")[0].strip() if "—" in raw else raw.split("(")[0].strip()
+            goal_labels.append((v, focus))
+            goals_desc_lines.append(f"- {focus}: {HELP_DESC_MAP[v]}")
+
+    goals_block = "\n".join(goals_desc_lines) if goals_desc_lines else ""
 
     prompt = (
-        f"You are a friendly Advice Reply Helper for students aged 10-11, specialising in EMAIL ADVICE REPLY writing. Student: {student_name}. Category: {category_name}.\n"
-        "The student has written an advice reply email - a friendly email responding to someone who asked for help or advice about a problem.\n"
-        "RULES: ONLY give feedback on " + category_name + ". NEVER write, rewrite, finish, or complete the student's email - not even a single sentence. "
-        "Use very simple English. Be concise (max 200 words total). More tips than praise. End with 1 short encouraging sentence.\n"
-        "Tips to Improve: short, clear, actionable - 1-2 simple tips per goal only.\n"
+        f"You are a friendly Advice Reply Helper for primary school students aged 10-11. "
+        f"Student name: {student_name}. Feedback category: {category_name}.\n"
+        "The student has written an ADVICE REPLY EMAIL — a friendly email responding to someone who asked for help with a problem.\n\n"
+        "=== STRICT RULES ===\n"
+        "1. NEVER write, rewrite, finish, or complete the student's email — not even one sentence.\n"
+        "2. ONLY give feedback on the selected checklist goals listed below.\n"
+        "3. Use very simple English suitable for P5 students (age 10-11), including weaker learners. No jargon.\n"
+        "4. Be honest and direct about weaknesses — do NOT give vague encouragement instead of real feedback.\n"
+        "5. Keep the total response under 400 words.\n\n"
     )
-    if goals_text:
+
+    if goals_block:
         prompt += (
-            f"The student has selected the following checklist goals to focus on:\n{goals_text}\n"
-            "Provide a SEPARATE row in the markdown table for EACH goal listed above.\n"
+            f"=== CHECKLIST GOALS TO REVIEW ===\n{goals_block}\n\n"
         )
+
     prompt += (
-        "IMPORTANT: After the table, write a section called \"Try This!\" that gives ONE concrete before-and-after example from the student's own writing. "
-        "Pick the weakest sentence and show how to improve it. Format: \"Your sentence: [quote]. You could try: [improved version].\" "
-        "This example MUST relate to one of the checklist goals.\n"
-        "Reply as a markdown table: | Checklist Goal | Did Well | Tips to Improve |\n"
+        "=== PART 1: FEEDBACK TABLE ===\n"
+        "Output a Markdown table with EXACTLY these four columns:\n"
+        "| Focus Area | What You Did Well | Weakness | Tip |\n"
+        "|---|---|---|---|\n"
+        "Rules for the table:\n"
+        "- One row per checklist goal selected above.\n"
+        "- Focus Area: the short name of the goal (e.g. 'Caring tone', 'Modal verbs').\n"
+        "- What You Did Well: ONE specific, genuine example from the student's writing. Quote their words if possible. Keep it to 1 sentence.\n"
+        "- Weakness: ONE honest, specific weakness in that area. Be direct but kind. 1 sentence only. If the student did well, write 'No major weakness — keep it up!'.\n"
+        "- Tip: ONE short, clear, actionable tip to fix the weakness. Max 1-2 sentences. Simple words only.\n\n"
+        "=== PART 2: HOW TO MAKE IT BETTER ===\n"
+        "After the table, write a section with this exact heading: ✏️ How to Make It Better\n"
+        "For EACH checklist goal reviewed, provide TWO concrete before-and-after examples.\n"
+        "Use this exact format for every example:\n\n"
+        "📌 [Focus Area Name]\n\n"
+        "Example 1:\n"
+        "❌ Your sentence: [quote a real sentence from the student's email, or describe what they wrote]\n"
+        "✅ Better: [an improved version, staying close to the student's original words]\n"
+        "💡 Why: [one sentence explaining why the improved version is better, using simple words]\n\n"
+        "Example 2:\n"
+        "❌ Your sentence: [quote a different sentence or gap from the student's email]\n"
+        "✅ Better: [an improved version]\n"
+        "💡 Why: [one sentence explanation]\n\n"
+        "Important rules for Part 2:\n"
+        "- Always give TWO examples per focus area — never just one.\n"
+        "- Quote the student's ACTUAL sentences wherever possible.\n"
+        "- Keep improved versions close to the student's original so they feel achievable.\n"
+        "- If the student's email is too short to find two examples, create examples showing what they COULD add.\n"
+        "- Use only simple vocabulary appropriate for age 10-11.\n\n"
     )
+
     if custom_q:
-        prompt += f'Student question: "{custom_q}"\n'
-    prompt += f"\nAdvice Reply Email:\n---\n{writing}\n---"
+        prompt += f"=== STUDENT'S OWN QUESTION ===\n\"{custom_q}\"\nPlease address this question briefly after Part 2.\n\n"
+
+    prompt += f"=== STUDENT'S EMAIL ===\n---\n{writing}\n---"
     return prompt
 
 
