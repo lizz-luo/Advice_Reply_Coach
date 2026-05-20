@@ -198,11 +198,7 @@ def get_ai_feedback(prompt: str) -> str:
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "You are a helpful, encouraging writing coach for primary school students. "
-                    "Follow the user prompt exactly and return concise markdown. "
-                    "When the prompt shows a format with ❌, ✅, and 💡 on separate lines, "
-                    "always keep each of these on its own line. Never merge them into one paragraph.",
+                "content": "You are a helpful encouraging writing coach for primary school students aged 10-11. Follow the user prompt exactly and return concise markdown. When writing examples with lines starting with negative, positive, and idea markers, always put each on its own separate line. Never merge them into one paragraph.",
                     ),
             },
             {"role": "user", "content": prompt},
