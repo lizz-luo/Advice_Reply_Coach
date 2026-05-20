@@ -368,18 +368,20 @@ st.subheader("✍️ Step 2 — Your Advice Reply Email")
 if not step1_ok:
     st.info("Please complete Step 1 first.")
 
+st.markdown(
+    "<p>Paste or type your advice reply email below</p>"
+    "<p class='hint-text'>ℹ️ You can paste your whole email or just the part you want help with — "
+    "like your greeting, a paragraph, or your ending.</p>",
+    unsafe_allow_html=True,
+)
+
 st.text_area(
-    "Paste or type your advice reply email below",
     key="writing_input",
     placeholder="Paste your whole email here, or just the part you want feedback on...",
     height=220,
     disabled=not step1_ok,
 )
-st.markdown(
-    "<p class='hint-text'>ℹ️ You can paste your whole email or just the part you want help with — "
-    "like your greeting, a paragraph, or your ending.</p>",
-    unsafe_allow_html=True,
-)
+
 wc = word_count(st.session_state.get("writing_input", ""))
 st.caption(f"{wc} word{'s' if wc != 1 else ''}")
 
