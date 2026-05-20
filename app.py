@@ -199,7 +199,6 @@ def get_ai_feedback(prompt: str) -> str:
             {
                 "role": "system",
                 "content": "You are a helpful encouraging writing coach for primary school students aged 10-11. Follow the user prompt exactly and return concise markdown. When writing examples with lines starting with negative, positive, and idea markers, always put each on its own separate line. Never merge them into one paragraph.",
-                ,
             },
             {"role": "user", "content": prompt},
         ],
