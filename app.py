@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from groq import Groq
 
-st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout="centered")
+st.set_page_config(page_title="Advice Reply Helper", page_icon="âœ‰ï¸", layout="centered")
 
 HKT = ZoneInfo("Asia/Hong_Kong")
 
@@ -16,11 +16,11 @@ HELP_HINTS = {
     "explain_advice":         "say WHY each idea will help",
     "caring_tone":            "sound kind and encouraging",
     "modal_verbs":            "use: should / could / might / would",
-    "conditional_sentences":  "use: If you…, you could…",
-    "empathy_phrases":        "use: I understand how you feel…",
+    "conditional_sentences":  "use: If youâ€¦, you couldâ€¦",
+    "empathy_phrases":        "use: I understand how you feelâ€¦",
     "linking_words":          "use: firstly / moreover / in addition",
     "spelling_punctuation":   "check all spelling and full stops",
-    "greeting_signoff":       "start with Dear… end with Best wishes…",
+    "greeting_signoff":       "start with Dearâ€¦ end with Best wishesâ€¦",
     "acknowledge_problem":    "show you understand their problem first",
     "separate_paragraphs":    "one idea per paragraph",
     "encouraging_closing":    "end with something hopeful",
@@ -28,30 +28,30 @@ HELP_HINTS = {
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem? (= talk about the reader's problem)"},
-        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
-        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help? (= say how each tip can help)"},
-        {"value": "caring_tone",      "label": "❤️ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
+        {"value": "address_problem",  "label": "ðŸŽ¯ Did I talk about the reader's problem? (= talk about the reader's problem)"},
+        {"value": "two_advice",       "label": "ðŸ’¡ Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
+        {"value": "explain_advice",   "label": "ðŸ” Did I explain how each tip can help? (= say how each tip can help)"},
+        {"value": "caring_tone",      "label": "â¤ï¸ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
     ],
     "language": [
-        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs correctly? (e.g. should, could, might)"},
-        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences? (e.g. If you…, you could…)"},
-        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show I understand? (e.g. I understand how you feel)"},
-        {"value": "linking_words",         "label": "🔗 Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
-        {"value": "spelling_punctuation",  "label": "✏ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
+        {"value": "modal_verbs",           "label": "ðŸ’ª Did I use modal verbs correctly? (e.g. should, could, might)"},
+        {"value": "conditional_sentences", "label": "ðŸ”„ Did I use conditional sentences? (e.g. If youâ€¦, you couldâ€¦)"},
+        {"value": "empathy_phrases",       "label": "ðŸ¤— Did I use phrases to show I understand? (e.g. I understand how you feel)"},
+        {"value": "linking_words",         "label": "ðŸ”— Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
+        {"value": "spelling_punctuation",  "label": "âœ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
     ],
     "organisation": [
-        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
-        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first? (= show you understand first)"},
-        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph? (= one idea per paragraph)"},
-        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support? (= end with hope and support)"},
+        {"value": "greeting_signoff",    "label": "ðŸ‘‹ Did I include a proper greeting and sign-off? (e.g. Dearâ€¦ / Best wishes)"},
+        {"value": "acknowledge_problem", "label": "ðŸ“¨ Did I show I understand the problem first? (= show you understand first)"},
+        {"value": "separate_paragraphs", "label": "ðŸ“„ Did I put each idea in its own paragraph? (= one idea per paragraph)"},
+        {"value": "encouraging_closing", "label": "ðŸŒŸ Did I end with hope and support? (= end with hope and support)"},
     ],
 }
 
 MODE_DESCRIPTIONS = {
-    "content":      "💡 Help me with what I wrote about — feedback on problem response, advice, explanations, and tone.",
-    "language":     "🔤 Help me with my words and sentences — feedback on modal verbs, conditionals, empathy phrases, linking words, spelling, and punctuation.",
-    "organisation": "📄 Help me with how I organised my email — feedback on greeting, sign-off, paragraph structure, and closing.",
+    "content":      "ðŸ’¡ Help me with what I wrote about â€” feedback on problem response, advice, explanations, and tone.",
+    "language":     "ðŸ”¤ Help me with my words and sentences â€” feedback on modal verbs, conditionals, empathy phrases, linking words, spelling, and punctuation.",
+    "organisation": "ðŸ“„ Help me with how I organised my email â€” feedback on greeting, sign-off, paragraph structure, and closing.",
 }
 
 HELP_DESC_MAP = {
@@ -114,10 +114,10 @@ def build_prompt(writing, student_name, mode, help_values, custom_q):
     goals_desc_lines = []
     for v in help_values:
         if v in HELP_DESC_MAP:
-            # Get short label (strip emoji prefix, take text before " — " or full label)
+            # Get short label (strip emoji prefix, take text before " â€” " or full label)
             raw = next((o["label"] for opts in HELP_OPTIONS.values() for o in opts if o["value"] == v), v)
             # Use just the key name as focus area label (clean short form)
-            focus = raw.split("—")[0].strip() if "—" in raw else raw.split("(")[0].strip()
+            focus = raw.split("â€”")[0].strip() if "â€”" in raw else raw.split("(")[0].strip()
             goal_labels.append((v, focus))
             goals_desc_lines.append(f"- {focus}: {HELP_DESC_MAP[v]}")
 
@@ -126,12 +126,12 @@ def build_prompt(writing, student_name, mode, help_values, custom_q):
     prompt = (
         f"You are a friendly Advice Reply Helper for primary school students aged 10-11. "
         f"Student name: {student_name}. Feedback category: {category_name}.\n"
-        "The student has written an ADVICE REPLY EMAIL — a friendly email responding to someone who asked for help with a problem.\n\n"
+        "The student has written an ADVICE REPLY EMAIL â€” a friendly email responding to someone who asked for help with a problem.\n\n"
         "=== STRICT RULES ===\n"
-        "1. NEVER write, rewrite, finish, or complete the student's email — not even one sentence.\n"
+        "1. NEVER write, rewrite, finish, or complete the student's email â€” not even one sentence.\n"
         "2. ONLY give feedback on the selected checklist goals listed below.\n"
         "3. Use very simple English suitable for P5 students (age 10-11), including weaker learners. No jargon.\n"
-        "4. Be honest and direct about weaknesses — do NOT give vague encouragement instead of real feedback.\n"
+        "4. Be honest and direct about weaknesses â€” do NOT give vague encouragement instead of real feedback.\n"
         "5. Keep the total response under 400 words.\n\n"
     )
 
@@ -149,27 +149,27 @@ def build_prompt(writing, student_name, mode, help_values, custom_q):
         "- One row per checklist goal selected above.\n"
         "- Focus Area: the short name of the goal (e.g. 'Caring tone', 'Modal verbs').\n"
         "- What You Did Well: ONE specific, genuine example from the student's writing. Quote their words if possible. Keep it to 1 sentence.\n"
-        "- Weakness: ONE honest, specific weakness in that area. Be direct but kind. 1 sentence only. If the student did well, write 'No major weakness — keep it up!'.\n"
+        "- Weakness: ONE honest, specific weakness in that area. Be direct but kind. 1 sentence only. If the student did well, write 'No major weakness â€” keep it up!'.\n"
         "- Tip: ONE short, clear, actionable tip to fix the weakness. Max 1-2 sentences. Simple words only.\n\n"
         "=== PART 2: HOW TO MAKE IT BETTER ===\n"
-        "After the table, write a section with this exact heading: ✏️ How to Make It Better\n"
+        "After the table, write a section with this exact heading: âœï¸ How to Make It Better\n"
         "For EACH checklist goal reviewed, provide TWO concrete before-and-after examples.\n"
         "Use this exact format for every example:\n\n"
-        "📌 [Focus Area Name]\n\n"
+        "ðŸ“Œ [Focus Area Name]\n\n"
         "Follow this exact format. Each line must be on its own line. Do not merge lines together:\\n\\n"
         "Example 1:\\n"
-        "❌ Your sentence: \"I think you should talk to your friend.\"\\n"
-        "✅ Better: \"If you feel upset, you could try talking to your friend about how you feel.\"\\n"
-        "💡 Why: This uses a conditional sentence which makes the advice sound more gentle and helpful.\\n"
+        "âŒ Your sentence: \"I think you should talk to your friend.\"\\n"
+        "âœ… Better: \"If you feel upset, you could try talking to your friend about how you feel.\"\\n"
+        "ðŸ’¡ Why: This uses a conditional sentence which makes the advice sound more gentle and helpful.\\n"
         "\\n"
         "Example 2:\\n"
-        "❌ Your sentence: \"I hope you get better.\"\\n"
-        "✅ Better: \"I really hope you feel much better soon — please don't worry too much!\"\\n"
-        "💡 Why: Adding warm words like 'really' and 'please don't worry' makes the tone more caring.\\n"
+        "âŒ Your sentence: \"I hope you get better.\"\\n"
+        "âœ… Better: \"I really hope you feel much better soon â€” please don't worry too much!\"\\n"
+        "ðŸ’¡ Why: Adding warm words like 'really' and 'please don't worry' makes the tone more caring.\\n"
         "\\n"
-        "Now follow the same format for the student's email below. Each ❌, ✅, and 💡 line must start on a new line.\\n\\n"
+        "Now follow the same format for the student's email below. Each âŒ, âœ…, and ðŸ’¡ line must start on a new line.\\n\\n"
         "Important rules for Part 2:\n"
-        "- Always give TWO examples per focus area — never just one.\n"
+        "- Always give TWO examples per focus area â€” never just one.\n"
         "- Quote the student's ACTUAL sentences wherever possible.\n"
         "- Keep improved versions close to the student's original so they feel achievable.\n"
         "- If the student's email is too short to find two examples, create examples showing what they COULD add.\n"
@@ -190,7 +190,7 @@ def get_groq_client():
     return Groq(api_key=api_key)
 
 def post_process_feedback(text: str) -> str:
-    markers = ["❌", "✅", "💡", "📌", "Example 1:", "Example 2:"]
+    markers = ["âŒ", "âœ…", "ðŸ’¡", "ðŸ“Œ", "Example 1:", "Example 2:"]
     for m in markers:
         text = text.replace(m, f"\n\n{m}")
     text = re.sub(r'\n{3,}', '\n\n', text)
@@ -276,7 +276,7 @@ h1{text-align:center;color:#0369a1;margin-bottom:4px}.subtitle{text-align:center
 .sample{background:#f8fbff;border:1px solid #dbeafe;padding:12px 14px;border-radius:8px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{background:#0ea5e9;color:#fff;padding:10px;text-align:left}td{padding:10px;border-bottom:1px solid #dbeafe;vertical-align:top}tr:nth-child(even) td{background:#f8fbff}
 </style></head><body>""",
-        "<h1>✉️ Advice Reply Helper</h1><div class='subtitle'>Learning Log</div>",
+        "<h1>âœ‰ï¸ Advice Reply Helper</h1><div class='subtitle'>Learning Log</div>",
         "<div class='info'>",
         f"<p><strong>Student:</strong> {escape_html(name)}</p>",
     ]
@@ -308,7 +308,7 @@ table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{backgr
     return "".join(rows).encode("utf-8")
 
 
-# ── App start ────────────────────────────────────────────────────────────────
+# â”€â”€ App start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 init_state()
 
@@ -377,11 +377,11 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
     unsafe_allow_html=True,
 )
 
-# ── Header ───────────────────────────────────────────────────────────────────
+# â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown(
     """
 <div class='hero'>
-  <div class='badge'>✉️ Advice Reply Helper</div>
+  <div class='badge'>âœ‰ï¸ Advice Reply Helper</div>
   <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Helper</h1>
   <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Helper for Writing a Better Reply!</p>
 </div>
@@ -389,9 +389,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── Step 1 ───────────────────────────────────────────────────────────────────
+# â”€â”€ Step 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("👋 Step 1 — About You")
+st.subheader("ðŸ‘‹ Step 1 â€” About You")
 c1, c2, c3 = st.columns(3)
 with c1:
     st.text_input("First Name",   key="student_name",   placeholder="e.g. Sarah")
@@ -401,14 +401,14 @@ with c3:
     st.text_input("Class Number", key="student_number", placeholder="e.g. 12")
 
 st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
-if st.button("✅ Next Step", use_container_width=True, key="step1_next"):
+if st.button("âœ… Next Step", use_container_width=True, key="step1_next"):
     if all([
         st.session_state.get("student_name",   "").strip(),
         st.session_state.get("student_class",  "").strip(),
         st.session_state.get("student_number", "").strip(),
     ]):
         st.session_state["step1_confirmed"] = True
-        # no st.rerun() — let Streamlit's natural rerun handle it
+        # no st.rerun() â€” let Streamlit's natural rerun handle it
     else:
         st.warning("Please complete all three fields before continuing.")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -416,15 +416,15 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 step1_ok = st.session_state.get("step1_confirmed", False)
 
-# ── Step 2 ───────────────────────────────────────────────────────────────────
+# â”€â”€ Step 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("✍️ Step 2 — Your Advice Reply Email")
+st.subheader("âœï¸ Step 2 â€” Your Advice Reply Email")
 if not step1_ok:
     st.info("Please complete Step 1 first.")
 
 st.markdown(
     "<p>Paste or type your advice reply email below</p>"
-    "<p class='hint-text'>ℹ️ You can paste your whole email or just the part you want help with — "
+    "<p class='hint-text'>â„¹ï¸ You can paste your whole email or just the part you want help with â€” "
     "like your greeting, a paragraph, or your ending.</p>",
     unsafe_allow_html=True,
 )
@@ -441,11 +441,11 @@ wc = word_count(st.session_state.get("writing_input", ""))
 st.caption(f"{wc} word{'s' if wc != 1 else ''}")
 
 st.markdown("<div class='next-step-btn'>", unsafe_allow_html=True)
-if st.button("✅ Next Step", use_container_width=True, disabled=not step1_ok, key="step2_next"):
+if st.button("âœ… Next Step", use_container_width=True, disabled=not step1_ok, key="step2_next"):
     if len(st.session_state.get("writing_input", "").strip()) > 10:
         st.session_state["step2_confirmed"] = True
         do_reset_after_step2()
-        # no st.rerun() — let Streamlit handle it
+        # no st.rerun() â€” let Streamlit handle it
     else:
         st.warning("Please paste or type at least a few sentences before continuing.")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -453,9 +453,9 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 step2_ok = st.session_state.get("step2_confirmed", False)
 
-# ── Step 3 ───────────────────────────────────────────────────────────────────
+# â”€â”€ Step 3 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("🎯 Step 3 — What Would You Like Help With?")
+st.subheader("ðŸŽ¯ Step 3 â€” What Would You Like Help With?")
 if not step2_ok:
     st.info("Please complete Step 2 first.")
 
@@ -486,13 +486,13 @@ valid_vals   = [v for v in current_vals if v in all_goal_options]
 if valid_vals != current_vals:
     st.session_state["help_values"] = valid_vals
 
-# ── Step 4 ───────────────────────────────────────────────────────────────────
+# â”€â”€ Step 4 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("📋 Step 4 — Choose Checklist Goals")
+st.subheader("ðŸ“‹ Step 4 â€” Choose Checklist Goals")
 if not step3_ok:
     st.info("Please complete Step 2 and choose a category first.")
 else:
-    st.caption("You can select one or more goals — the AI will give feedback on all of them.")
+    st.caption("You can select one or more goals â€” the AI will give feedback on all of them.")
 
 st.multiselect(
     "What would you like feedback on?",
@@ -505,9 +505,9 @@ st.multiselect(
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Step 5 ───────────────────────────────────────────────────────────────────
+# â”€â”€ Step 5 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("💬 Step 5 — Ask Your Own Question *(optional)*")
+st.subheader("ðŸ’¬ Step 5 â€” Ask Your Own Question *(optional)*")
 st.text_area(
     "Got a specific question about your email?",
     key="custom_question",
@@ -517,12 +517,12 @@ st.text_area(
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Submit ───────────────────────────────────────────────────────────────────
+# â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 col_a, col_b = st.columns([3, 1])
 with col_a:
-    submit = st.button("📨 Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
+    submit = st.button("ðŸ“¨ Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
 with col_b:
-    if st.button("🧹 Clear", use_container_width=True):
+    if st.button("ðŸ§¹ Clear", use_container_width=True):
         st.session_state["_do_clear"] = True
         st.rerun()
 
@@ -561,35 +561,35 @@ if submit:
         except Exception as e:
             st.error(f"Groq API error: {e}")
 
-# ── Feedback ─────────────────────────────────────────────────────────────────
+# â”€â”€ Feedback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if st.session_state.get("feedback_text"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
-    st.subheader("✨ Your Feedback")
+    st.subheader("âœ¨ Your Feedback")
     count = st.session_state["interaction_count"]
-    st.markdown(f"<span class='help-chip'>💬 {count} interaction{'s' if count != 1 else ''}</span>", unsafe_allow_html=True)
+    st.markdown(f"<span class='help-chip'>ðŸ’¬ {count} interaction{'s' if count != 1 else ''}</span>", unsafe_allow_html=True)
     st.markdown("<div class='feedback-box'>", unsafe_allow_html=True)
     st.markdown(st.session_state["feedback_text"])
     st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ── What's Next ───────────────────────────────────────────────────────────────
+# â”€â”€ What's Next â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if st.session_state.get("interaction_history"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
-    st.subheader("🚀 What's Next?")
+    st.subheader("ðŸš€ What's Next?")
     nx1, nx2 = st.columns(2)
     with nx1:
-        if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
-                     help="Keep the same email — choose different goals"):
+        if st.button("ðŸŽ¯ Try Another Checklist Goal", use_container_width=True,
+                     help="Keep the same email â€” choose different goals"):
             st.session_state["_do_reset_after_step2"] = True
             st.rerun()
     with nx2:
-        if st.button("✏️ Review a New Part of My Email", use_container_width=True,
+        if st.button("âœï¸ Review a New Part of My Email", use_container_width=True,
                      help="Keep your current email and reset from Step 3 onward"):
             st.session_state["_do_reset_after_step2"] = True
             st.rerun()
 
     st.download_button(
-        "💾 Save Learning Log",
+        "ðŸ’¾ Save Learning Log",
         data=download_log_html(),
         file_name=f"Learning_Log_{(st.session_state.get('student_name') or 'Student').replace(' ', '_')}.html",
         mime="text/html",
@@ -597,8 +597,8 @@ if st.session_state.get("interaction_history"):
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Session History ───────────────────────────────────────────────────────────
-with st.expander("🧾 Session History"):
+# â”€â”€ Session History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+with st.expander("ðŸ§¾ Session History"):
     history = st.session_state.get("interaction_history", [])
     if not history:
         st.write("No feedback sessions yet.")
@@ -608,14 +608,14 @@ with st.expander("🧾 Session History"):
             st.markdown("<div class='history-card'>", unsafe_allow_html=True)
             st.markdown(f"**Session {idx}**")
             st.markdown(
-                f"<span class='history-meta'>🕒 {item['timestamp']}</span>"
-                f"<span class='history-meta'>🎯 {item['mode_label']}</span>",
+                f"<span class='history-meta'>ðŸ•’ {item['timestamp']}</span>"
+                f"<span class='history-meta'>ðŸŽ¯ {item['mode_label']}</span>",
                 unsafe_allow_html=True,
             )
             goals = item.get("help_goals", [])
             if goals:
                 for g in goals:
-                    st.markdown(f"<span class='history-meta'>📋 {g}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span class='history-meta'>ðŸ“‹ {g}</span>", unsafe_allow_html=True)
             if item.get("custom_question"):
                 st.markdown(f"**Custom question:** {item['custom_question']}")
             st.markdown("**Writing sample**")
@@ -631,8 +631,8 @@ with st.expander("🧾 Session History"):
             st.markdown(item["response"])
             st.markdown("</div>", unsafe_allow_html=True)
 
-# ── Footer ────────────────────────────────────────────────────────────────────
+# â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 st.markdown(
-    "<div class='footer-note'>© 2026 Becky Cheung. All Rights Reserved.</div>",
+    "<div class='footer-note'>Â© 2026 Becky Cheung. All Rights Reserved.</div>",
     unsafe_allow_html=True,
 )
