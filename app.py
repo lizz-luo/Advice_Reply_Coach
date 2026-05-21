@@ -102,6 +102,8 @@ def init_state():
         "reset_after_step2_on_next_run": False,
         "reset_from_step3_on_next_run": False,
         "scroll_to_step": "",
+        "session_history_expanded": False,
+        "trigger_auto_download": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -343,6 +345,9 @@ if st.session_state.pop("clear_writing_on_next_run", False):
     st.session_state["writing_input"] = ""
     st.session_state["step2_confirmed"] = False
 
+scroll_target = st.session_state.pop("scroll_to_step", "")
+trigger_auto_download = st.session_state.pop("trigger_auto_download", False)
+
 st.markdown(
     """
 <style>
@@ -402,6 +407,34 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
 """,
     unsafe_allow_html=True,
 )
+
+if scroll_target or trigger_auto_download:
+    scroll_script = f"""
+    <script>
+    (function() {{
+      const targetId = {repr('{SCROLL_PLACEHOLDER}')};
+      const shouldDownload = {str(True).lower()};
+      function runActions() {{
+        const doc = window.parent && window.parent.document ? window.parent.document : document;
+        if (targetId) {{
+          const el = doc.getElementById(targetId) || document.getElementById(targetId);
+          if (el) {{
+            el.scrollIntoView({{behavior: 'auto', block: 'start'}});
+          }}
+        }}
+        if ({'true' if trigger_auto_download else 'false'}) {{
+          const buttons = Array.from(doc.querySelectorAll('button'));
+          const saveBtn = buttons.find(btn => btn.innerText && btn.innerText.includes('Save Learning Log'));
+          if (saveBtn) {{ saveBtn.click(); }}
+        }}
+      }}
+      setTimeout(runActions, 80);
+      setTimeout(runActions, 250);
+      setTimeout(runActions, 600);
+    }})();
+    </script>
+    """.replace('{SCROLL_PLACEHOLDER}', scroll_target)
+    st.components.v1.html(scroll_script, height=0, width=0)
 
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
@@ -597,6 +630,7 @@ if st.session_state.get("show_save_log_dialog", False):
         with yes_col:
             if st.button("Yes", use_container_width=True, key="save_log_yes"):
                 st.session_state["save_log_requested"] = True
+                st.session_state["trigger_auto_download"] = True
                 st.session_state["show_save_log_dialog"] = False
                 st.rerun()
         with later_col:
@@ -625,6 +659,7 @@ if st.session_state.get("interaction_history"):
         if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
                      help="Keep the same email — choose different goals"):
             st.session_state["reset_from_step3_on_next_run"] = True
+            st.session_state["session_history_expanded"] = False
             st.session_state["scroll_to_step"] = "step3-anchor"
             st.rerun()
     with nx2:
@@ -632,6 +667,7 @@ if st.session_state.get("interaction_history"):
                      help="Go back to Step 2, clear the email box, and reset later steps"):
             st.session_state["clear_writing_on_next_run"] = True
             st.session_state["reset_after_step2_on_next_run"] = True
+            st.session_state["session_history_expanded"] = False
             st.session_state["scroll_to_step"] = "step2-anchor"
             st.rerun()
 
@@ -648,7 +684,7 @@ if st.session_state.get("interaction_history"):
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Session History ───────────────────────────────────────────────────────────
-with st.expander("🧾 Session History"):
+with st.expander("🧾 Session History", expanded=st.session_state.get("session_history_expanded", False)):
     history = st.session_state.get("interaction_history", [])
     if not history:
         st.write("No feedback sessions yet.")
