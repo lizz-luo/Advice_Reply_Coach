@@ -20,6 +20,7 @@ HELP_HINTS = {
     "empathy_phrases":        "use: I understand how you feel…",
     "linking_words":          "use: firstly / moreover / in addition",
     "spelling_punctuation":   "check all spelling and full stops",
+    "strong_words": "use strong, expressive words instead of basic ones",
     "greeting_signoff":       "start with Dear… end with Best wishes…",
     "acknowledge_problem":    "show you understand their problem first",
     "separate_paragraphs":    "one idea per paragraph",
@@ -39,6 +40,7 @@ HELP_OPTIONS = {
         {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show I understand? (e.g. I understand how you feel)"},
         {"value": "linking_words",         "label": "🔗 Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
         {"value": "spelling_punctuation",  "label": "✏ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
+        {"value": "power word",            "label": "⚡ Did I use strong, expressive words instead of basic ones? (e.g. sad → upset, good → wonderful, happy → delighted)"},
     ],
     "organisation": [
         {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
@@ -64,6 +66,7 @@ HELP_DESC_MAP = {
     "empathy_phrases":        "whether the student used phrases to show empathy (e.g. I understand how you feel)",
     "linking_words":          "whether the student used appropriate linking words (e.g. firstly, moreover, in addition)",
     "spelling_punctuation":   "whether spelling and punctuation are correct throughout",
+    "strong_words": "whether the student used strong, expressive vocabulary instead of basic words where appropriate",
     "greeting_signoff":       "whether the student included a proper greeting and sign-off",
     "acknowledge_problem":    "whether the student acknowledged the reader's problem in the opening",
     "separate_paragraphs":    "whether each piece of advice is in its own paragraph",
