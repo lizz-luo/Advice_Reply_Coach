@@ -96,8 +96,11 @@ def init_state():
         "step1_confirmed":    False,
         "step2_confirmed":    False,
         "show_save_log_dialog": False,
-        "run_feedback_after_dialog": False,
-        "trigger_save_log_download": False,
+        "save_log_requested": False,
+        "run_feedback_now": False,
+        "clear_writing_on_next_run": False,
+        "reset_after_step2_on_next_run": False,
+        "reset_from_step3_on_next_run": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -250,8 +253,8 @@ def do_reset_after_step2():
     st.session_state["custom_question"] = ""
     st.session_state["feedback_text"] = ""
     st.session_state["show_save_log_dialog"] = False
-    st.session_state["run_feedback_after_dialog"] = False
-    st.session_state["trigger_save_log_download"] = False
+    st.session_state["save_log_requested"] = False
+    st.session_state["run_feedback_now"] = False
 
 
 def do_reset_from_step3():
@@ -259,12 +262,11 @@ def do_reset_from_step3():
     st.session_state["custom_question"] = ""
     st.session_state["feedback_text"] = ""
     st.session_state["show_save_log_dialog"] = False
-    st.session_state["run_feedback_after_dialog"] = False
-    st.session_state["trigger_save_log_download"] = False
+    st.session_state["save_log_requested"] = False
+    st.session_state["run_feedback_now"] = False
 
 
 def do_clear():
-    st.session_state["writing_input"]      = ""
     st.session_state["selected_mode"]      = "content"
     st.session_state["help_values"]        = []
     st.session_state["custom_question"]    = ""
@@ -274,8 +276,8 @@ def do_clear():
     st.session_state["step1_confirmed"]    = False
     st.session_state["step2_confirmed"]    = False
     st.session_state["show_save_log_dialog"] = False
-    st.session_state["run_feedback_after_dialog"] = False
-    st.session_state["trigger_save_log_download"] = False
+    st.session_state["save_log_requested"] = False
+    st.session_state["run_feedback_now"] = False
 
 
 def download_log_html() -> bytes:
@@ -330,12 +332,15 @@ table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{backgr
 
 init_state()
 
-if st.session_state.pop("_do_reset_after_step2", False):
+if st.session_state.pop("_do_reset_after_step2", False) or st.session_state.pop("reset_after_step2_on_next_run", False):
     do_reset_after_step2()
-if st.session_state.pop("_do_reset_from_step3", False):
+if st.session_state.pop("_do_reset_from_step3", False) or st.session_state.pop("reset_from_step3_on_next_run", False):
     do_reset_from_step3()
 if st.session_state.pop("_do_clear", False):
     do_clear()
+if st.session_state.pop("clear_writing_on_next_run", False):
+    st.session_state["writing_input"] = ""
+    st.session_state["step2_confirmed"] = False
 
 st.markdown(
     """
@@ -559,7 +564,6 @@ if submit:
         st.warning("I can't write or finish your email for you. Try your best first, then I will give you tips to improve it.")
     else:
         st.session_state["show_save_log_dialog"] = True
-        st.rerun()
 
 if st.session_state.get("show_save_log_dialog", False):
     @st.dialog("Save Learning Log?")
@@ -567,20 +571,20 @@ if st.session_state.get("show_save_log_dialog", False):
         st.write("Would you like to save your learning log now?")
         yes_col, later_col = st.columns(2)
         with yes_col:
-            if st.button("Yes", use_container_width=True, key="dialog_yes_save_log"):
-                st.session_state["trigger_save_log_download"] = True
-                st.session_state["run_feedback_after_dialog"] = True
+            if st.button("Yes", use_container_width=True, key="save_log_yes"):
+                st.session_state["save_log_requested"] = True
+                st.session_state["run_feedback_now"] = True
                 st.session_state["show_save_log_dialog"] = False
                 st.rerun()
         with later_col:
-            if st.button("Later", use_container_width=True, key="dialog_later_save_log"):
-                st.session_state["run_feedback_after_dialog"] = True
+            if st.button("Later", use_container_width=True, key="save_log_later"):
+                st.session_state["run_feedback_now"] = True
                 st.session_state["show_save_log_dialog"] = False
                 st.rerun()
     save_log_dialog()
 
-if st.session_state.get("run_feedback_after_dialog", False):
-    st.session_state["run_feedback_after_dialog"] = False
+if st.session_state.get("run_feedback_now", False):
+    st.session_state["run_feedback_now"] = False
     writing  = st.session_state.get("writing_input",  "").strip()
     custom_q = st.session_state.get("custom_question", "").strip()
     hvs      = st.session_state.get("help_values",    [])
@@ -608,28 +612,6 @@ if st.session_state.get("run_feedback_after_dialog", False):
     except Exception as e:
         st.error(f"Groq API error: {e}")
 
-if st.session_state.get("trigger_save_log_download", False):
-    st.download_button(
-        "💾 Save Learning Log",
-        data=download_log_html(),
-        file_name=f"Learning_Log_{(st.session_state.get('student_name') or 'Student').replace(' ', '_')}.html",
-        mime="text/html",
-        use_container_width=False,
-        key="save_log_dialog_download",
-    )
-    st.session_state["trigger_save_log_download"] = False
-    st.markdown(
-        """
-        <script>
-        const btn = window.parent.document.querySelector('button[kind="secondary"][data-testid="stDownloadButton"]')
-            || window.parent.document.querySelector('[data-testid="stDownloadButton"] button')
-            || document.querySelector('[data-testid="stDownloadButton"] button');
-        if (btn) { btn.click(); }
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
-
 # ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
@@ -649,16 +631,18 @@ if st.session_state.get("interaction_history"):
     with nx1:
         if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
                      help="Keep the same email — choose different goals"):
-            st.session_state["_do_reset_from_step3"] = True
+            st.session_state["reset_from_step3_on_next_run"] = True
             st.rerun()
     with nx2:
         if st.button("✏️ Review a New Part of My Email", use_container_width=True,
                      help="Go back to Step 2, clear the email box, and reset later steps"):
-            st.session_state["writing_input"] = ""
-            st.session_state["step2_confirmed"] = False
-            st.session_state["_do_reset_after_step2"] = True
+            st.session_state["clear_writing_on_next_run"] = True
+            st.session_state["reset_after_step2_on_next_run"] = True
             st.rerun()
 
+    if st.session_state.get("save_log_requested", False):
+        st.info("Your learning log is ready. Please click Save Learning Log below.")
+        st.session_state["save_log_requested"] = False
     st.download_button(
         "💾 Save Learning Log",
         data=download_log_html(),
