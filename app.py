@@ -101,6 +101,7 @@ def init_state():
         "clear_writing_on_next_run": False,
         "reset_after_step2_on_next_run": False,
         "reset_from_step3_on_next_run": False,
+        "scroll_to_step": "",
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -555,6 +556,8 @@ if submit:
     writing  = st.session_state.get("writing_input",  "").strip()
     custom_q = st.session_state.get("custom_question", "").strip()
     hvs      = st.session_state.get("help_values",    [])
+    md       = st.session_state.get("selected_mode",  "")
+    name     = st.session_state.get("student_name",   "").strip()
 
     if not writing or len(writing) < 10:
         st.error("Please type or paste your advice reply email first (at least a few sentences).")
@@ -563,7 +566,28 @@ if submit:
     elif llm_detect_write_for_me(custom_q):
         st.warning("I can't write or finish your email for you. Try your best first, then I will give you tips to improve it.")
     else:
-        st.session_state["show_save_log_dialog"] = True
+        prompt      = build_prompt(writing, name, md, hvs, custom_q)
+        goal_labels = [goal_label_map.get(v, v) for v in hvs]
+        try:
+            with st.spinner("Reviewing your email..."):
+                feedback = get_ai_feedback(prompt)
+            st.session_state["feedback_text"] = feedback
+            st.session_state["interaction_count"] += 1
+            st.session_state["interaction_history"].append(
+                {
+                    "timestamp":    hk_now_str(),
+                    "mode":         md,
+                    "mode_label":   MODE_DESC_MAP[md],
+                    "help_goals":   goal_labels,
+                    "custom_question": custom_q,
+                    "writing":      writing,
+                    "response":     feedback,
+                }
+            )
+            st.session_state["show_save_log_dialog"] = True
+            st.rerun()
+        except Exception as e:
+            st.error(f"Groq API error: {e}")
 
 if st.session_state.get("show_save_log_dialog", False):
     @st.dialog("Save Learning Log?")
@@ -573,44 +597,13 @@ if st.session_state.get("show_save_log_dialog", False):
         with yes_col:
             if st.button("Yes", use_container_width=True, key="save_log_yes"):
                 st.session_state["save_log_requested"] = True
-                st.session_state["run_feedback_now"] = True
                 st.session_state["show_save_log_dialog"] = False
                 st.rerun()
         with later_col:
             if st.button("Later", use_container_width=True, key="save_log_later"):
-                st.session_state["run_feedback_now"] = True
                 st.session_state["show_save_log_dialog"] = False
                 st.rerun()
     save_log_dialog()
-
-if st.session_state.get("run_feedback_now", False):
-    st.session_state["run_feedback_now"] = False
-    writing  = st.session_state.get("writing_input",  "").strip()
-    custom_q = st.session_state.get("custom_question", "").strip()
-    hvs      = st.session_state.get("help_values",    [])
-    md       = st.session_state.get("selected_mode",  "")
-    name     = st.session_state.get("student_name",   "").strip()
-
-    prompt      = build_prompt(writing, name, md, hvs, custom_q)
-    goal_labels = [goal_label_map.get(v, v) for v in hvs]
-    try:
-        with st.spinner("Reviewing your email..."):
-            feedback = get_ai_feedback(prompt)
-        st.session_state["feedback_text"] = feedback
-        st.session_state["interaction_count"] += 1
-        st.session_state["interaction_history"].append(
-            {
-                "timestamp":    hk_now_str(),
-                "mode":         md,
-                "mode_label":   MODE_DESC_MAP[md],
-                "help_goals":   goal_labels,
-                "custom_question": custom_q,
-                "writing":      writing,
-                "response":     feedback,
-            }
-        )
-    except Exception as e:
-        st.error(f"Groq API error: {e}")
 
 # ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
@@ -632,12 +625,14 @@ if st.session_state.get("interaction_history"):
         if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
                      help="Keep the same email — choose different goals"):
             st.session_state["reset_from_step3_on_next_run"] = True
+            st.session_state["scroll_to_step"] = "step3-anchor"
             st.rerun()
     with nx2:
         if st.button("✏️ Review a New Part of My Email", use_container_width=True,
                      help="Go back to Step 2, clear the email box, and reset later steps"):
             st.session_state["clear_writing_on_next_run"] = True
             st.session_state["reset_after_step2_on_next_run"] = True
+            st.session_state["scroll_to_step"] = "step2-anchor"
             st.rerun()
 
     if st.session_state.get("save_log_requested", False):
