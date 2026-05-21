@@ -95,6 +95,9 @@ def init_state():
         "interaction_count":  0,
         "step1_confirmed":    False,
         "step2_confirmed":    False,
+        "show_save_log_dialog": False,
+        "run_feedback_after_dialog": False,
+        "trigger_save_log_download": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -243,9 +246,21 @@ def escape_html(s: str) -> str:
 
 def do_reset_after_step2():
     st.session_state["selected_mode"] = "content"
-    st.session_state["help_values"]   = []
+    st.session_state["help_values"] = []
     st.session_state["custom_question"] = ""
-    st.session_state["feedback_text"]   = ""
+    st.session_state["feedback_text"] = ""
+    st.session_state["show_save_log_dialog"] = False
+    st.session_state["run_feedback_after_dialog"] = False
+    st.session_state["trigger_save_log_download"] = False
+
+
+def do_reset_from_step3():
+    st.session_state["help_values"] = []
+    st.session_state["custom_question"] = ""
+    st.session_state["feedback_text"] = ""
+    st.session_state["show_save_log_dialog"] = False
+    st.session_state["run_feedback_after_dialog"] = False
+    st.session_state["trigger_save_log_download"] = False
 
 
 def do_clear():
@@ -258,6 +273,9 @@ def do_clear():
     st.session_state["interaction_count"]  = 0
     st.session_state["step1_confirmed"]    = False
     st.session_state["step2_confirmed"]    = False
+    st.session_state["show_save_log_dialog"] = False
+    st.session_state["run_feedback_after_dialog"] = False
+    st.session_state["trigger_save_log_download"] = False
 
 
 def download_log_html() -> bytes:
@@ -314,6 +332,8 @@ init_state()
 
 if st.session_state.pop("_do_reset_after_step2", False):
     do_reset_after_step2()
+if st.session_state.pop("_do_reset_from_step3", False):
+    do_reset_from_step3()
 if st.session_state.pop("_do_clear", False):
     do_clear()
 
@@ -367,7 +387,7 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
 @media (prefers-color-scheme: dark) {
     .next-step-btn > div > button {
         background: linear-gradient(135deg, #38bdf8, #0ea5e9) !important;
-        color: #082f49 !important;
+        color: #ffffff !important;
     }
 }
 .goal-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; padding-left: 0.1rem; }
@@ -530,8 +550,6 @@ if submit:
     writing  = st.session_state.get("writing_input",  "").strip()
     custom_q = st.session_state.get("custom_question", "").strip()
     hvs      = st.session_state.get("help_values",    [])
-    md       = st.session_state.get("selected_mode",  "")
-    name     = st.session_state.get("student_name",   "").strip()
 
     if not writing or len(writing) < 10:
         st.error("Please type or paste your advice reply email first (at least a few sentences).")
@@ -540,26 +558,77 @@ if submit:
     elif llm_detect_write_for_me(custom_q):
         st.warning("I can't write or finish your email for you. Try your best first, then I will give you tips to improve it.")
     else:
-        prompt      = build_prompt(writing, name, md, hvs, custom_q)
-        goal_labels = [goal_label_map.get(v, v) for v in hvs]
-        try:
-            with st.spinner("Reviewing your email..."):
-                feedback = get_ai_feedback(prompt)
-            st.session_state["feedback_text"] = feedback
-            st.session_state["interaction_count"] += 1
-            st.session_state["interaction_history"].append(
-                {
-                    "timestamp":    hk_now_str(),
-                    "mode":         md,
-                    "mode_label":   MODE_DESC_MAP[md],
-                    "help_goals":   goal_labels,
-                    "custom_question": custom_q,
-                    "writing":      writing,
-                    "response":     feedback,
-                }
-            )
-        except Exception as e:
-            st.error(f"Groq API error: {e}")
+        st.session_state["show_save_log_dialog"] = True
+        st.rerun()
+
+if st.session_state.get("show_save_log_dialog", False):
+    @st.dialog("Save Learning Log?")
+    def save_log_dialog():
+        st.write("Would you like to save your learning log now?")
+        yes_col, later_col = st.columns(2)
+        with yes_col:
+            if st.button("Yes", use_container_width=True, key="dialog_yes_save_log"):
+                st.session_state["trigger_save_log_download"] = True
+                st.session_state["run_feedback_after_dialog"] = True
+                st.session_state["show_save_log_dialog"] = False
+                st.rerun()
+        with later_col:
+            if st.button("Later", use_container_width=True, key="dialog_later_save_log"):
+                st.session_state["run_feedback_after_dialog"] = True
+                st.session_state["show_save_log_dialog"] = False
+                st.rerun()
+    save_log_dialog()
+
+if st.session_state.get("run_feedback_after_dialog", False):
+    st.session_state["run_feedback_after_dialog"] = False
+    writing  = st.session_state.get("writing_input",  "").strip()
+    custom_q = st.session_state.get("custom_question", "").strip()
+    hvs      = st.session_state.get("help_values",    [])
+    md       = st.session_state.get("selected_mode",  "")
+    name     = st.session_state.get("student_name",   "").strip()
+
+    prompt      = build_prompt(writing, name, md, hvs, custom_q)
+    goal_labels = [goal_label_map.get(v, v) for v in hvs]
+    try:
+        with st.spinner("Reviewing your email..."):
+            feedback = get_ai_feedback(prompt)
+        st.session_state["feedback_text"] = feedback
+        st.session_state["interaction_count"] += 1
+        st.session_state["interaction_history"].append(
+            {
+                "timestamp":    hk_now_str(),
+                "mode":         md,
+                "mode_label":   MODE_DESC_MAP[md],
+                "help_goals":   goal_labels,
+                "custom_question": custom_q,
+                "writing":      writing,
+                "response":     feedback,
+            }
+        )
+    except Exception as e:
+        st.error(f"Groq API error: {e}")
+
+if st.session_state.get("trigger_save_log_download", False):
+    st.download_button(
+        "💾 Save Learning Log",
+        data=download_log_html(),
+        file_name=f"Learning_Log_{(st.session_state.get('student_name') or 'Student').replace(' ', '_')}.html",
+        mime="text/html",
+        use_container_width=False,
+        key="save_log_dialog_download",
+    )
+    st.session_state["trigger_save_log_download"] = False
+    st.markdown(
+        """
+        <script>
+        const btn = window.parent.document.querySelector('button[kind="secondary"][data-testid="stDownloadButton"]')
+            || window.parent.document.querySelector('[data-testid="stDownloadButton"] button')
+            || document.querySelector('[data-testid="stDownloadButton"] button');
+        if (btn) { btn.click(); }
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
@@ -580,11 +649,13 @@ if st.session_state.get("interaction_history"):
     with nx1:
         if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
                      help="Keep the same email — choose different goals"):
-            st.session_state["_do_reset_after_step2"] = True
+            st.session_state["_do_reset_from_step3"] = True
             st.rerun()
     with nx2:
         if st.button("✏️ Review a New Part of My Email", use_container_width=True,
-                     help="Keep your current email and reset from Step 3 onward"):
+                     help="Go back to Step 2, clear the email box, and reset later steps"):
+            st.session_state["writing_input"] = ""
+            st.session_state["step2_confirmed"] = False
             st.session_state["_do_reset_after_step2"] = True
             st.rerun()
 
