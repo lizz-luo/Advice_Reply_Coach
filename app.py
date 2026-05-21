@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from groq import Groq
 
-st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout="centered")
+st.set_page_config(page_title="Advice Reply Coach", page_icon="✉️", layout="centered")
 
 HKT = ZoneInfo("Asia/Hong_Kong")
 
@@ -133,7 +133,7 @@ def build_prompt(writing, student_name, mode, help_values, custom_q):
     goals_block = "\n".join(goals_desc_lines) if goals_desc_lines else ""
 
     prompt = (
-        f"You are a friendly Advice Reply Helper for primary school students aged 10-11. "
+        f"You are a friendly Advice Reply Coach for primary school students aged 10-11. "
         f"Student name: {student_name}. Feedback category: {category_name}.\n"
         "The student has written an ADVICE REPLY EMAIL — a friendly email responding to someone who asked for help with a problem.\n\n"
         "=== STRICT RULES ===\n"
@@ -299,7 +299,7 @@ h1{text-align:center;color:#0369a1;margin-bottom:4px}.subtitle{text-align:center
 .sample{background:#f8fbff;border:1px solid #dbeafe;padding:12px 14px;border-radius:8px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{background:#0ea5e9;color:#fff;padding:10px;text-align:left}td{padding:10px;border-bottom:1px solid #dbeafe;vertical-align:top}tr:nth-child(even) td{background:#f8fbff}
 </style></head><body>""",
-        "<h1>✉️ Advice Reply Helper</h1><div class='subtitle'>Learning Log</div>",
+        "<h1>✉️ Advice Reply Coach</h1><div class='subtitle'>Learning Log</div>",
         "<div class='info'>",
         f"<p><strong>Student:</strong> {escape_html(name)}</p>",
     ]
@@ -474,9 +474,9 @@ if scroll_target or trigger_auto_download:
 st.markdown(
     """
 <div class='hero'>
-  <div class='badge'>✉️ Advice Reply Helper</div>
-  <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Helper</h1>
-  <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Helper for Writing a Better Reply!</p>
+  <div class='badge'>✉️ Advice Reply Coach</div>
+  <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Coach</h1>
+  <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Coach for Writing a Better Reply!</p>
 </div>
 """,
     unsafe_allow_html=True,
