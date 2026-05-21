@@ -413,24 +413,37 @@ if scroll_target or trigger_auto_download:
     <script>
     (function() {{
       const targetId = {repr('{SCROLL_PLACEHOLDER}')};
-      const shouldDownload = {str(True).lower()};
-      function runActions() {{
-        const doc = window.parent && window.parent.document ? window.parent.document : document;
-        if (targetId) {{
-          const el = doc.getElementById(targetId) || document.getElementById(targetId);
-          if (el) {{
-            el.scrollIntoView({{behavior: 'auto', block: 'start'}});
-          }}
+      const doDownload = {'true' if trigger_auto_download else 'false'};
+      const frameEl = window.frameElement;
+      const parentDoc = window.parent && window.parent.document ? window.parent.document : null;
+
+      function scrollToTarget() {{
+        if (!targetId) return;
+        const localEl = document.getElementById(targetId);
+        if (localEl) {{
+          localEl.scrollIntoView({{behavior: 'auto', block: 'start'}});
         }}
-        if ({'true' if trigger_auto_download else 'false'}) {{
-          const buttons = Array.from(doc.querySelectorAll('button'));
-          const saveBtn = buttons.find(btn => btn.innerText && btn.innerText.includes('Save Learning Log'));
-          if (saveBtn) {{ saveBtn.click(); }}
+        if (frameEl && parentDoc) {{
+          const rect = frameEl.getBoundingClientRect();
+          const targetRect = localEl ? localEl.getBoundingClientRect() : null;
+          const absoluteTop = window.parent.scrollY + rect.top + (targetRect ? targetRect.top : 0) - 24;
+          window.parent.scrollTo({{top: Math.max(absoluteTop, 0), behavior: 'auto'}});
         }}
       }}
-      setTimeout(runActions, 80);
-      setTimeout(runActions, 250);
-      setTimeout(runActions, 600);
+
+      function triggerDownloadOnce() {{
+        if (!doDownload || window.__saveLogAutoClicked) return;
+        const root = parentDoc || document;
+        const buttons = Array.from(root.querySelectorAll('button'));
+        const saveBtn = buttons.find(btn => btn.innerText && btn.innerText.includes('Save Learning Log'));
+        if (saveBtn) {{
+          window.__saveLogAutoClicked = true;
+          saveBtn.click();
+        }}
+      }}
+
+      setTimeout(() => {{ scrollToTarget(); triggerDownloadOnce(); }}, 150);
+      setTimeout(() => {{ scrollToTarget(); triggerDownloadOnce(); }}, 450);
     }})();
     </script>
     """.replace('{SCROLL_PLACEHOLDER}', scroll_target)
@@ -476,7 +489,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 step1_ok = st.session_state.get("step1_confirmed", False)
 
 # ── Step 2 ───────────────────────────────────────────────────────────────────
-st.markdown("<div class='panel'>", unsafe_allow_html=True)
+st.markdown("<div id='step2-anchor'></div><div class='panel'>", unsafe_allow_html=True)
 st.subheader("✍️ Step 2 — Your Advice Reply Email")
 if not step1_ok:
     st.info("Please complete Step 1 first.")
@@ -513,7 +526,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 step2_ok = st.session_state.get("step2_confirmed", False)
 
 # ── Step 3 ───────────────────────────────────────────────────────────────────
-st.markdown("<div class='panel'>", unsafe_allow_html=True)
+st.markdown("<div id='step3-anchor'></div><div class='panel'>", unsafe_allow_html=True)
 st.subheader("🎯 Step 3 — What Would You Like Help With?")
 if not step2_ok:
     st.info("Please complete Step 2 first.")
