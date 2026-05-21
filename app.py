@@ -414,41 +414,62 @@ if scroll_target or trigger_auto_download:
     (function() {{
       const targetId = {repr('{SCROLL_PLACEHOLDER}')};
       const doDownload = {'true' if trigger_auto_download else 'false'};
-      const frameEl = window.frameElement;
-      const parentDoc = window.parent && window.parent.document ? window.parent.document : null;
+      const parentWin = window.parent || window;
+      const parentDoc = parentWin.document || document;
 
       function scrollToTarget() {{
         if (!targetId) return;
-        const localEl = document.getElementById(targetId);
-        if (localEl) {{
-          localEl.scrollIntoView({{behavior: 'auto', block: 'start'}});
+
+        const iframe = window.frameElement;
+        const localTarget = document.getElementById(targetId);
+        if (localTarget) {{
+          try {{ localTarget.scrollIntoView({{behavior: 'auto', block: 'start'}}); }} catch (e) {{}}
         }}
-        if (frameEl && parentDoc) {{
-          const rect = frameEl.getBoundingClientRect();
-          const targetRect = localEl ? localEl.getBoundingClientRect() : null;
-          const absoluteTop = window.parent.scrollY + rect.top + (targetRect ? targetRect.top : 0) - 24;
-          window.parent.scrollTo({{top: Math.max(absoluteTop, 0), behavior: 'auto'}});
-        }}
+
+        try {{
+          if (parentWin.location.hash !== '#' + targetId) {{
+            parentWin.location.hash = targetId;
+          }}
+        }} catch (e) {{}}
+
+        try {{
+          const anchorInParent = parentDoc.getElementById(targetId);
+          if (anchorInParent) {{
+            anchorInParent.scrollIntoView({{behavior: 'auto', block: 'start'}});
+            return;
+          }}
+        }} catch (e) {{}}
+
+        try {{
+          if (iframe && localTarget) {{
+            const frameRect = iframe.getBoundingClientRect();
+            const targetRect = localTarget.getBoundingClientRect();
+            const absoluteTop = (parentWin.scrollY || parentWin.pageYOffset || 0) + frameRect.top + targetRect.top - 24;
+            parentWin.scrollTo(0, Math.max(absoluteTop, 0));
+          }}
+        }} catch (e) {{}}
       }}
 
       function triggerDownloadOnce() {{
-        if (!doDownload || window.__saveLogAutoClicked) return;
-        const root = parentDoc || document;
-        const buttons = Array.from(root.querySelectorAll('button'));
+        if (!doDownload || parentWin.__saveLogAutoClicked) return;
+        const buttons = Array.from(parentDoc.querySelectorAll('button'));
         const saveBtn = buttons.find(btn => btn.innerText && btn.innerText.includes('Save Learning Log'));
         if (saveBtn) {{
-          window.__saveLogAutoClicked = true;
+          parentWin.__saveLogAutoClicked = true;
           saveBtn.click();
         }}
       }}
 
-      setTimeout(() => {{ scrollToTarget(); triggerDownloadOnce(); }}, 150);
-      setTimeout(() => {{ scrollToTarget(); triggerDownloadOnce(); }}, 450);
+      [120, 350, 800, 1400].forEach((delay) => {{
+        setTimeout(() => {{
+          scrollToTarget();
+          triggerDownloadOnce();
+        }}, delay);
+      }});
     }})();
     </script>
     """.replace('{SCROLL_PLACEHOLDER}', scroll_target)
     st.components.v1.html(scroll_script, height=0, width=0)
-
 # ── Header ───────────────────────────────────────────────────────────────────
 st.markdown(
     """
@@ -590,13 +611,7 @@ st.text_area(
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Submit ───────────────────────────────────────────────────────────────────
-col_a, col_b = st.columns([3, 1])
-with col_a:
-    submit = st.button("📨 Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
-with col_b:
-    if st.button("🧹 Clear", use_container_width=True):
-        st.session_state["_do_clear"] = True
-        st.rerun()
+submit = st.button("📨 Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
 
 if submit:
     writing  = st.session_state.get("writing_input",  "").strip()
