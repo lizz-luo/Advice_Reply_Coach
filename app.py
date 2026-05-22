@@ -406,6 +406,19 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
 }
 .goal-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; padding-left: 0.1rem; }
 .footer-note { text-align:center; color: var(--muted); font-size:0.85rem; margin-top:2rem; padding-bottom:1rem; }
+
+.hero-title-row { display:flex; align-items:center; justify-content:center; gap:0.55rem; flex-wrap:wrap; }
+.floating-emoji { display:inline-block; font-size:1.9rem; line-height:1; animation: floaty 3.2s ease-in-out infinite; will-change: transform; }
+.floating-emoji.delay-1 { animation-delay: 0.4s; }
+.floating-emoji.delay-2 { animation-delay: 0.9s; }
+@keyframes floaty {
+0% { transform: translateY(0px) rotate(0deg); }
+50% { transform: translateY(-8px) rotate(-4deg); }
+100% { transform: translateY(0px) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {.floating-emoji { animation:none !important;}}
+.step-emoji { display:inline-block; margin-right:0.2rem; }
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -478,8 +491,12 @@ st.markdown(
     """
 <div class='hero'>
   <div class='badge'>✉️ Advice Reply Coach</div>
-  <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Coach</h1>
-  <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Coach for Writing a Better Reply!</p>
+  <div class='hero-title-row'>
+<span class='floating-emoji'>💡</span>
+<h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Coach</h1>
+<span class='floating-emoji delay-1'>✨</span>
+</div>
+<p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Coach for Writing a Better Reply!</p>
 </div>
 """,
     unsafe_allow_html=True,
@@ -487,7 +504,7 @@ st.markdown(
 
 # ── Step 1 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("👋 Step 1 — About You")
+st.markdown("<h3><span class='floating-emoji step-emoji'>👋</span>Step 1 — About You</h3>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 with c1:
     st.text_input("First Name",   key="student_name",   placeholder="e.g. Sarah")
@@ -514,7 +531,7 @@ step1_ok = st.session_state.get("step1_confirmed", False)
 
 # ── Step 2 ───────────────────────────────────────────────────────────────────
 st.markdown("<div id='step2-anchor'></div><div class='panel'>", unsafe_allow_html=True)
-st.subheader("✍️ Step 2 — Your Advice Reply Email")
+st.markdown("<h3><span class='floating-emoji step-emoji'>✍️</span>Step 2 — Your Advice Reply Email</h3>", unsafe_allow_html=True)
 if not step1_ok:
     st.info("Please complete Step 1 first.")
 
@@ -551,7 +568,7 @@ step2_ok = st.session_state.get("step2_confirmed", False)
 
 # ── Step 3 ───────────────────────────────────────────────────────────────────
 st.markdown("<div id='step3-anchor'></div><div class='panel'>", unsafe_allow_html=True)
-st.subheader("🎯 Step 3 — What Would You Like Help With?")
+st.markdown("<h3><span class='floating-emoji step-emoji'>🎯</span>Step 3 — What Would You Like Help With?</h3>", unsafe_allow_html=True)
 if not step2_ok:
     st.info("Please complete Step 2 first.")
 
@@ -584,7 +601,7 @@ if valid_vals != current_vals:
 
 # ── Step 4 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("📋 Step 4 — Choose Checklist Goals")
+st.markdown("<h3><span class='floating-emoji step-emoji'>📋</span>Step 4 — Choose Checklist Goals</h3>", unsafe_allow_html=True)
 if not step3_ok:
     st.info("Please complete Step 2 and choose a category first.")
 else:
@@ -603,7 +620,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Step 5 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("💬 Step 5 — Ask Your Own Question *(optional)*")
+st.markdown("<h3><span class='floating-emoji step-emoji'>💬</span>Step 5 — Ask Your Own Question <em>(optional)</em></h3>", unsafe_allow_html=True)
 st.text_area(
     "Got a specific question about your email?",
     key="custom_question",
@@ -673,7 +690,7 @@ if st.session_state.get("show_save_log_dialog", False):
 # ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
-    st.subheader("✨ Your Feedback")
+    st.subheader("✨ <span class='floating-emoji'>📝</span> Your Feedback")
     count = st.session_state["interaction_count"]
     st.markdown(f"<span class='help-chip'>💬 {count} interaction{'s' if count != 1 else ''}</span>", unsafe_allow_html=True)
     st.markdown("<div class='feedback-box'>", unsafe_allow_html=True)
