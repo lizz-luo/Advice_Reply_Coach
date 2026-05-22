@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 import streamlit as st
 from groq import Groq
 
-st.set_page_config(page_title="Advice Reply Coach", page_icon="✉️", layout="centered")
+st.set_page_config(page_title="Advice Reply Helper", page_icon="✉️", layout="centered")
 
 HKT = ZoneInfo("Asia/Hong_Kong")
 
@@ -29,31 +29,31 @@ HELP_HINTS = {
 
 HELP_OPTIONS = {
     "content": [
-        {"value": "address_problem",  "label": "🎯 Did I talk about the reader's problem? (= talk about the reader's problem)"},
-        {"value": "two_advice",       "label": "💡 Did I give at least 2 pieces of advice? (= give at least 2 pieces of advice)"},
-        {"value": "explain_advice",   "label": "🔍 Did I explain how each tip can help? (= say how each tip can help)"},
-        {"value": "caring_tone",      "label": "❤️ Did I use kind, warm, friendly words? (= kind, warm, friendly words)"},
+        {"value": "address_problem",  "label": "🎯 Address the problem   (= talk about the reader's problem)"},
+        {"value": "two_advice",       "label": "💡 Two or more tips   (= give at least 2 pieces of advice)"},
+        {"value": "explain_advice",   "label": "🔍 Explain your advice   (= say how each tip can help)"},
+        {"value": "caring_tone",      "label": "❤️ Caring tone   (= kind, warm, friendly words)"},
     ],
     "language": [
-        {"value": "modal_verbs",           "label": "💪 Did I use modal verbs correctly? (e.g. should, could, might)"},
-        {"value": "conditional_sentences", "label": "🔄 Did I use conditional sentences? (e.g. If you…, you could…)"},
-        {"value": "empathy_phrases",       "label": "🤗 Did I use phrases to show I understand? (e.g. I understand how you feel)"},
-        {"value": "linking_words",         "label": "🔗 Did I use words to join my ideas? (e.g. firstly, also, moreover)"},
-        {"value": "spelling_punctuation",  "label": "✏ Are my spelling and punctuation correct? (e.g. ! ? , : .)"},
-        {"value": "power word",            "label": "⚡ Did I use strong, expressive words instead of basic ones? (e.g. sad → upset, good → wonderful, happy → delighted)"},
+        {"value": "modal_verbs",           "label": "💪 Modal verbs   (e.g. should, could, might)"},
+        {"value": "conditional_sentences", "label": "🔄 Conditional sentences   (e.g. If you…, you could…)"},
+        {"value": "empathy_phrases",       "label": "🤗 Empathy phrases   (e.g. I understand how you feel)"},
+        {"value": "linking_words",         "label": "🔗 Linking words   (e.g. firstly, also, moreover)"},
+        {"value": "spelling_punctuation",  "label": "✏️ Spelling & punctuation   (e.g. ! ? , : .)"},
+        {"value": "power word",            "label": "⚡ Power words   (e.g. sad → upset, good → wonderful, happy → delighted)"},
     ],
     "organisation": [
-        {"value": "greeting_signoff",    "label": "👋 Did I include a proper greeting and sign-off? (e.g. Dear… / Best wishes)"},
-        {"value": "acknowledge_problem", "label": "📨 Did I show I understand the problem first? (= show you understand first)"},
-        {"value": "separate_paragraphs", "label": "📄 Did I put each idea in its own paragraph? (= one idea per paragraph)"},
-        {"value": "encouraging_closing", "label": "🌟 Did I end with hope and support? (= end with hope and support)"},
+        {"value": "greeting_signoff",    "label": "👋 Greeting & sign-off   (e.g. Dear… / Best wishes)"},
+        {"value": "acknowledge_problem", "label": "📨 Acknowledge the problem   (= show you understand first)"},
+        {"value": "separate_paragraphs", "label": "📄 Separate paragraphs   (= one idea per paragraph)"},
+        {"value": "encouraging_closing", "label": "🌟 Encouraging closing   (= end with hope and support)"},
     ],
 }
 
 MODE_DESCRIPTIONS = {
-    "content":      "💡 Help me with what I wrote about — feedback on problem response, advice, explanations, and tone.",
-    "language":     "🔤 Help me with my words and sentences — feedback on modal verbs, conditionals, empathy phrases, linking words, spelling, and punctuation.",
-    "organisation": "📄 Help me with how I organised my email — feedback on greeting, sign-off, paragraph structure, and closing.",
+    "content":      "💡 Help me with what I wrote — Get help on your ideas, advice, and tone.",
+    "language":     "🔤 Help me with my words — Get help on grammar, linking words, spelling, and more.",
+    "organisation": "📄 Help me with how I set up my email — Get help on greeting, paragraphs, sign-off, and more.",
 }
 
 HELP_DESC_MAP = {
@@ -136,7 +136,7 @@ def build_prompt(writing, student_name, mode, help_values, custom_q):
     goals_block = "\n".join(goals_desc_lines) if goals_desc_lines else ""
 
     prompt = (
-        f"You are a friendly Advice Reply Coach for primary school students aged 10-11. "
+        f"You are a friendly Advice Reply Helper for primary school students aged 10-11. "
         f"Student name: {student_name}. Feedback category: {category_name}.\n"
         "The student has written an ADVICE REPLY EMAIL — a friendly email responding to someone who asked for help with a problem.\n\n"
         "=== STRICT RULES ===\n"
@@ -302,7 +302,7 @@ h1{text-align:center;color:#0369a1;margin-bottom:4px}.subtitle{text-align:center
 .sample{background:#f8fbff;border:1px solid #dbeafe;padding:12px 14px;border-radius:8px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}th{background:#0ea5e9;color:#fff;padding:10px;text-align:left}td{padding:10px;border-bottom:1px solid #dbeafe;vertical-align:top}tr:nth-child(even) td{background:#f8fbff}
 </style></head><body>""",
-        "<h1>✉️ Advice Reply Coach</h1><div class='subtitle'>Learning Log</div>",
+        "<h1>✉️ Advice Reply Helper</h1><div class='subtitle'>Learning Log</div>",
         "<div class='info'>",
         f"<p><strong>Student:</strong> {escape_html(name)}</p>",
     ]
@@ -406,6 +406,24 @@ hr, [data-testid="stDivider"] { border-color: var(--panel-border) !important; ba
 }
 .goal-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; padding-left: 0.1rem; }
 .footer-note { text-align:center; color: var(--muted); font-size:0.85rem; margin-top:2rem; padding-bottom:1rem; }
+
+.hero-title-row { display:flex; align-items:center; justify-content:center; gap:0.55rem; flex-wrap:wrap; }
+.floating-emoji { display:inline-block; font-size:1.9rem; line-height:1; animation: floaty 3.2s ease-in-out infinite; will-change: transform; transform-origin:center; }
+.floating-emoji.delay-1 { animation-delay: 0.4s; }
+.step-emoji { display:inline-block; margin-right:0.2rem; animation: floaty 3.2s ease-in-out infinite; will-change: transform; transform-origin:center; }
+.hero .floating-emoji,
+.panel h3 .step-emoji,
+.panel h3 .floating-emoji,
+.feedback-box .floating-emoji { animation: floaty 3.2s ease-in-out infinite; }
+@keyframes floaty {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(-4deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .floating-emoji, .step-emoji, .hero .floating-emoji, .panel h3 .step-emoji, .panel h3 .floating-emoji, .feedback-box .floating-emoji { animation: none !important; transform: none !important; }
+}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -477,9 +495,13 @@ if scroll_target or trigger_auto_download:
 st.markdown(
     """
 <div class='hero'>
-  <div class='badge'>✉️ Advice Reply Coach</div>
-  <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Coach</h1>
-  <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Coach for Writing a Better Reply!</p>
+  <div class='badge'>✉️ Advice Reply Helper</div>
+  <div class='hero-title-row'>
+    <span class='floating-emoji'>💡</span>
+    <h1 style='margin:0 0 0.35rem 0; color: var(--text);'>Advice Reply Helper</h1>
+    <span class='floating-emoji delay-1'>✨</span>
+  </div>
+  <p class='small-note' style='font-style:italic;font-weight:600;'>Your Friendly Helper for Writing a Better Reply!</p>
 </div>
 """,
     unsafe_allow_html=True,
@@ -487,7 +509,7 @@ st.markdown(
 
 # ── Step 1 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("👋 Step 1 — About You")
+st.markdown("<h3><span class='floating-emoji step-emoji'>👋</span>Step 1 — About You</h3>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 with c1:
     st.text_input("First Name",   key="student_name",   placeholder="e.g. Sarah")
@@ -514,7 +536,7 @@ step1_ok = st.session_state.get("step1_confirmed", False)
 
 # ── Step 2 ───────────────────────────────────────────────────────────────────
 st.markdown("<div id='step2-anchor'></div><div class='panel'>", unsafe_allow_html=True)
-st.subheader("✍️ Step 2 — Your Advice Reply Email")
+st.markdown("<h3><span class='floating-emoji step-emoji'>✍️</span>Step 2 — Your Advice Reply Email</h3>", unsafe_allow_html=True)
 if not step1_ok:
     st.info("Please complete Step 1 first.")
 
@@ -551,7 +573,7 @@ step2_ok = st.session_state.get("step2_confirmed", False)
 
 # ── Step 3 ───────────────────────────────────────────────────────────────────
 st.markdown("<div id='step3-anchor'></div><div class='panel'>", unsafe_allow_html=True)
-st.subheader("🎯 Step 3 — What Would You Like Help With?")
+st.markdown("<h3><span class='floating-emoji step-emoji'>🎯</span>Step 3 — What Do You Need Help With?</h3>", unsafe_allow_html=True)
 if not step2_ok:
     st.info("Please complete Step 2 first.")
 
@@ -584,11 +606,11 @@ if valid_vals != current_vals:
 
 # ── Step 4 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("📋 Step 4 — Choose Checklist Goals")
+st.markdown("<h3><span class='floating-emoji step-emoji'>📋</span>Step 4 — Pick Your Goals</h3>", unsafe_allow_html=True)
 if not step3_ok:
     st.info("Please complete Step 2 and choose a category first.")
 else:
-    st.caption("You can select one or more goals — the AI will give feedback on all of them.")
+    st.caption("Tick one or more goals you want help with:")
 
 st.multiselect(
     "What would you like feedback on?",
@@ -603,18 +625,18 @@ st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Step 5 ───────────────────────────────────────────────────────────────────
 st.markdown("<div class='panel'>", unsafe_allow_html=True)
-st.subheader("💬 Step 5 — Ask Your Own Question *(optional)*")
+st.markdown("<h3><span class='floating-emoji step-emoji'>💬</span>Step 5 — Ask Your Own Question <em>(optional)</em></h3>", unsafe_allow_html=True)
 st.text_area(
-    "Got a specific question about your email?",
+    "Do you have a question about your email?",
     key="custom_question",
-    placeholder="e.g. Does my advice sound helpful? Did I show enough empathy?",
+    placeholder="e.g. Does my advice sound kind? Did I show I care?",
     height=90,
     disabled=not step3_ok,
 )
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ── Submit ───────────────────────────────────────────────────────────────────
-submit = st.button("📨 Get Feedback", type="primary", use_container_width=True, disabled=not step3_ok)
+submit = st.button("📨 Get Help", type="primary", use_container_width=True, disabled=not step3_ok)
 
 if submit:
     writing  = st.session_state.get("writing_input",  "").strip()
@@ -673,7 +695,7 @@ if st.session_state.get("show_save_log_dialog", False):
 # ── Feedback ─────────────────────────────────────────────────────────────────
 if st.session_state.get("feedback_text"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
-    st.subheader("✨ Your Feedback")
+    st.markdown("<h3><span class='floating-emoji step-emoji'>✨</span>Your Feedback</h3>", unsafe_allow_html=True)
     count = st.session_state["interaction_count"]
     st.markdown(f"<span class='help-chip'>💬 {count} interaction{'s' if count != 1 else ''}</span>", unsafe_allow_html=True)
     st.markdown("<div class='feedback-box'>", unsafe_allow_html=True)
@@ -684,17 +706,17 @@ if st.session_state.get("feedback_text"):
 # ── What's Next ───────────────────────────────────────────────────────────────
 if st.session_state.get("interaction_history"):
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
-    st.subheader("🚀 What's Next?")
+    st.subheader("🚀 What Now?")
     nx1, nx2 = st.columns(2)
     with nx1:
-        if st.button("🎯 Try Another Checklist Goal", use_container_width=True,
+        if st.button("🎯 Try Other Goals", use_container_width=True,
                      help="Keep the same email — choose different goals"):
             st.session_state["reset_from_step3_on_next_run"] = True
             st.session_state["session_history_expanded"] = False
             st.session_state["scroll_to_step"] = "step3-anchor"
             st.rerun()
     with nx2:
-        if st.button("✏️ Review a New Part of My Email", use_container_width=True,
+        if st.button("✏️ Check a New Part of My Email", use_container_width=True,
                      help="Go back to Step 2, clear the email box, and reset later steps"):
             st.session_state["clear_writing_on_next_run"] = True
             st.session_state["reset_after_step2_on_next_run"] = True
